@@ -528,7 +528,6 @@ body[data-page="1"] .app{
 
 /* Give the grid row content room and center it */
 body[data-page="1"] .main.page1-grid{
-  align-content: center;  /* centers the panels within the middle row */
   min-height: 520px;      /* “2–3x taller” effect vs previous */
 }
 
@@ -541,11 +540,6 @@ body[data-page="1"] .panel.workspace{
 body[data-page="1"] .panel.code-bank{
   align-self: stretch; /* same top/bottom as the workspace row */
   padding-top: 10px;   /* prevents it from floating too high visually */
-}
-
-/* Nudge the code bank down so its first card aligns with dropzone */
-body[data-page="1"] .panel.code-bank .panel-body{
-  padding-top: 18px !important; /* overrides your 6px */
 }
 
 .line-pool{
@@ -570,4 +564,29 @@ body[data-page="1"] #dropzone{
 /* Keep the "empty" text nicely positioned */
 body[data-page="1"] #workspaceEmpty{
   padding-top: 6px;               /* reduce extra padding you had */
+}
+
+/* =========================
+   PAGE 1: LOCK GRID INTO ONE ROW (NO AUTO-PLACEMENT SURPRISES)
+   ========================= */
+
+body[data-page="1"] .main.page1-grid{
+  display: grid;
+  grid-template-columns: 1fr minmax(560px, 760px) 360px;
+  grid-template-areas: "spacer workspace bank";
+  gap: 14px;
+  align-items: start;     /* top-align items in their cells */
+  align-content: start;   /* prevents vertical shifting within a tall middle row */
+}
+
+body[data-page="1"] .page1-spacer{ grid-area: spacer; }
+body[data-page="1"] .panel.workspace{ grid-area: workspace; }
+body[data-page="1"] .panel.code-bank{ grid-area: bank; }
+
+/* defensive: ensure nobody gets pushed into an implicit second row */
+body[data-page="1"] .page1-spacer,
+body[data-page="1"] .panel.workspace,
+body[data-page="1"] .panel.code-bank{
+  grid-row: 1;
+  align-self: start;
 }
