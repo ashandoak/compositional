@@ -40,14 +40,14 @@ body{
 .app {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 22px 18px 18px;
+  padding: 34px 26px 28px; /* was 22px 18px 18px */
   height: 100%;
   box-sizing: border-box;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  gap: 14px;
+  gap: 18px; /* was 14px */
 }
-.top { text-align: center; padding: 8px 10px; }
+.top { text-align: center; padding: 12px 10px; }
 .top h1 { margin: 0; font-size: 18px; letter-spacing: 0.2px; font-weight: 700; }
 .top p { margin: 8px auto 0; max-width: 900px; color: var(--muted); line-height: 1.45; font-size: 14px; }
 
@@ -102,16 +102,17 @@ body{
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 8px 2px 0;
+  padding: 12px 2px 0;
 }
 .btnrow { display: flex; gap: 10px; align-items: center; }
 button {
   border: 1px solid var(--border);
-  background: rgba(255,255,255,0.04);
-  color: rgba(233,238,251,0.95);
-  padding: 10px 12px;
-  border-radius: 12px;
-  font-weight: 650;
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  padding: 14px 18px;      /* was 10px 12px */
+  border-radius: 14px;     /* was 12px */
+  font-weight: 700;        /* was 650 */
+  font-size: 15px;         /* add */
   cursor: pointer;
   transition: transform 0.08s ease, background 0.12s ease, border-color 0.12s ease;
 }
@@ -124,9 +125,11 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 .btn-primary:hover { background: rgba(122,162,255,0.20); }
 .btn-next {
+  padding: 14px 22px;
   background: rgba(71,209,140,0.14);
   border-color: rgba(71,209,140,0.42);
 }
+
 .btn-next:hover { background: rgba(71,209,140,0.18); }
 
 /* Toast */
@@ -514,4 +517,57 @@ body[data-page="1"] .panel.code-bank .draggable:hover{
   }
 }
 
+/* =========================
+   PAGE 1: VERTICAL CENTER + TALLER INTERACTIVE
+   ========================= */
 
+/* Make the middle row feel bigger, and keep it centered visually */
+body[data-page="1"] .app{
+  grid-template-rows: auto minmax(520px, 1fr) auto; /* forces a larger middle band */
+}
+
+/* Give the grid row content room and center it */
+body[data-page="1"] .main.page1-grid{
+  align-content: center;  /* centers the panels within the middle row */
+  min-height: 520px;      /* “2–3x taller” effect vs previous */
+}
+
+/* Make the workspace panel taller */
+body[data-page="1"] .panel.workspace{
+  min-height: 520px;
+}
+
+/* Keep code bank aligned with the workspace (not higher) */
+body[data-page="1"] .panel.code-bank{
+  align-self: stretch; /* same top/bottom as the workspace row */
+  padding-top: 10px;   /* prevents it from floating too high visually */
+}
+
+/* Nudge the code bank down so its first card aligns with dropzone */
+body[data-page="1"] .panel.code-bank .panel-body{
+  padding-top: 18px !important; /* overrides your 6px */
+}
+
+.line-pool{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+body[data-page="1"] .panel.code-bank .panel-body{
+  overflow: visible;     /* no scroll container */
+  min-height: unset;
+}
+
+/* Make the dropzone a real surface you can drop onto anywhere */
+body[data-page="1"] #dropzone{
+  min-height: 420px;              /* choose what feels right */
+  padding: 14px;                  /* create a generous hit target */
+  border-radius: 14px;
+  background: rgba(255,255,255,0.22);  /* subtle “surface” but still light */
+}
+
+/* Keep the "empty" text nicely positioned */
+body[data-page="1"] #workspaceEmpty{
+  padding-top: 6px;               /* reduce extra padding you had */
+}
