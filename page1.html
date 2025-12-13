@@ -6,7 +6,7 @@
   <title>Compositionality Interactive — Page 1</title>
   <link rel="stylesheet" href="assets/style.css" />
 </head>
-<body data-prev="index.html" data-next="page2.html">
+<body data-page="1" data-prev="index.html" data-next="page2.html">  
   <div class="app">
     <div class="top">
       <h1>A motivating example</h1>
@@ -16,9 +16,10 @@
       </p>
     </div>
 
-    <div class="main">
+    <div class="main page1-grid">
+      <div class="page1-spacer" aria-hidden="true"></div>
       <!-- Left: draggable pool -->
-      <section class="panel" aria-label="Code blocks">
+      <section class="panel code-bank" aria-label="Code-banks">
         <div class="panel-header">
           <div class="title">Code blocks</div>
           <div class="pill"><span id="poolCount">0</span> remaining</div>
@@ -33,7 +34,7 @@
       </section>
 
       <!-- Right: workspace -->
-      <section class="panel" aria-label="Workspace">
+      <section class="panel workspace" aria-label="Workspace">
         <div class="panel-header">
           <div class="title">Workspace</div>
           <div class="pill">Build the program</div>

@@ -1,29 +1,40 @@
-:root {
-  --bg: #0b0f17;
-  --panel: #121a2a;
-  --panel2: #0f1624;
-  --text: #e9eefb;
-  --muted: #a9b5d6;
-  --border: rgba(255,255,255,0.12);
-  --accent: #7aa2ff;
-  --good: #47d18c;
-  --warn: #ffcc66;
-  --bad: #ff6b6b;
-  --shadow: 0 10px 30px rgba(0,0,0,0.35);
-  --radius: 14px;
+:root{
+  --bg: #f6f8ff;
+  --panel: rgba(255,255,255,0.86);
+  --panel2: rgba(255,255,255,0.72);
+
+  --text: #0b1220;
+  --muted: rgba(11,18,32,0.62);
+
+  --border: rgba(11,18,32,0.12);
+  --shadow: 0 14px 40px rgba(11,18,32,0.10);
+
+  --accent: #4b7bff;
+  --good: #16a56b;
+  --warn: #d18a00;
+  --bad: #e03b3b;
+
+  --radius: 16px;
+
   --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
+
 html, body { height: 100%; }
-body {
-  margin: 0;
-  background: radial-gradient(1200px 700px at 30% 20%, rgba(122,162,255,0.18), transparent 55%),
-              radial-gradient(900px 600px at 80% 80%, rgba(71,209,140,0.12), transparent 55%),
-              var(--bg);
+
+
+body{
+  margin:0;
+  background:
+    radial-gradient(900px 600px at 20% 20%, rgba(75,123,255,0.20), transparent 55%),
+    radial-gradient(900px 600px at 80% 30%, rgba(255,90,160,0.16), transparent 55%),
+    radial-gradient(900px 600px at 65% 90%, rgba(22,165,107,0.14), transparent 55%),
+    var(--bg);
   color: var(--text);
   font-family: var(--sans);
 }
+
 
 /* Layout */
 .app {
@@ -357,3 +368,150 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   box-shadow:0 0 0 3px rgba(122,162,255,0.10) inset;
 }
 .arrow{color:rgba(169,181,214,0.7);font-family:var(--mono)}
+
+/* =========================
+   LIGHT THEME NORMALIZATION
+   ========================= */
+
+.panel-header .title,
+.pill,
+button,
+.code-note,
+.callout p {
+  color: var(--text);
+}
+
+.small,
+.hint,
+.tile .label,
+.slot-label {
+  color: var(--muted);
+}
+
+/* Make pills + codebox surfaces feel light */
+.pill {
+  background: rgba(255,255,255,0.55);
+  border-color: rgba(11,18,32,0.14);
+}
+
+.codebox,
+.code-preview {
+  background: rgba(255,255,255,0.55);
+  border-color: rgba(11,18,32,0.14);
+}
+
+/* Make draggables consistent in the light theme (pages 1/3/5) */
+.draggable {
+  background: rgba(255,255,255,0.86);
+  color: var(--text);
+  border-color: rgba(11,18,32,0.14);
+  box-shadow: 0 10px 24px rgba(11,18,32,0.08);
+}
+
+/* Dropzone/workspace base should not look like “dark mode” */
+.dropzone, .workspace {
+  border-color: rgba(11,18,32,0.16);
+  background: rgba(255,255,255,0.40);
+}
+
+
+/* =========================
+   PAGE 1: WORKSPACE CENTERED
+   ========================= */
+
+/* Bigger, more directive explainer */
+body[data-page="1"] .top{
+  padding: 14px 10px 6px;
+}
+body[data-page="1"] .top h1{
+  font-size: 32px;
+  line-height: 1.10;
+  letter-spacing: 0.2px;
+}
+body[data-page="1"] .top p{
+  font-size: 16px;
+  line-height: 1.55;
+  max-width: 980px;
+  color: rgba(11,18,32,0.72);
+}
+
+/* 3-column grid: spacer | centered workspace | right code bank */
+body[data-page="1"] .main.page1-grid{
+  grid-template-columns: 1fr minmax(560px, 760px) 360px;
+  align-items: start;
+}
+
+/* spacer is just air */
+body[data-page="1"] .page1-spacer{
+  min-height: 1px;
+}
+
+/* Workspace is the hero and centered */
+body[data-page="1"] .panel.workspace{
+  grid-column: 2;
+  box-shadow: 0 22px 70px rgba(11,18,32,0.14);
+  border-color: rgba(75,123,255,0.26);
+}
+body[data-page="1"] .panel.workspace .panel-header{
+  display:none; /* removes “Workspace / Build the program” */
+}
+body[data-page="1"] .panel.workspace .panel-body{
+  padding: 18px;
+}
+
+/* Dropzone: borderless + “ghost” placeholder */
+body[data-page="1"] .dropzone{
+  border: none;
+  background: transparent;
+  padding: 4px;
+}
+body[data-page="1"] .workspace-empty{
+  color: rgba(11,18,32,0.42);
+  font-size: 15px;
+  font-style: italic;
+  padding: 10px 2px 0;
+}
+
+/* Code bank: pushed right and visually detached */
+body[data-page="1"] .panel.code-bank{
+  grid-column: 3;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  opacity: 0.92;
+}
+body[data-page="1"] .panel.code-bank .panel-header{
+  display:none; /* remove outer container title/count */
+}
+body[data-page="1"] .panel.code-bank .code-note{
+  display:none; /* remove “Given…” box + instructions */
+}
+body[data-page="1"] .panel.code-bank .panel-body{
+  padding: 6px 0 0;
+}
+
+/* Detached draggable cards */
+body[data-page="1"] .panel.code-bank .draggable{
+  background: rgba(255,255,255,0.92);
+  border-color: rgba(11,18,32,0.14);
+  box-shadow: 0 10px 24px rgba(11,18,32,0.10);
+}
+body[data-page="1"] .panel.code-bank .draggable:hover{
+  box-shadow: 0 14px 32px rgba(11,18,32,0.14);
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 980px){
+  body[data-page="1"] .main.page1-grid{
+    grid-template-columns: 1fr;
+  }
+  body[data-page="1"] .page1-spacer{ display:none; }
+  body[data-page="1"] .panel.workspace{ grid-column: 1; }
+  body[data-page="1"] .panel.code-bank{
+    grid-column: 1;
+    margin-top: 10px;
+    opacity: 1;
+  }
+}
+
+
