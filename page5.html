@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Compositionality Interactive — Page 5</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body data-prev="page4.html" data-next="index.html">
+  <div class="app">
+    <div class="top">
+      <h1>Now you try it</h1>
+      <p>
+        Use functional primitives to build a solution that meets the goal below. Drag items into the blanks — no typing.
+      </p>
+    </div>
+
+    <div class="ribbon" aria-label="Concept ribbon">
+      <div class="step"><span class="chip" id="chipData">Data</span><span class="arrow">→</span></div>
+      <div class="step"><span class="chip" id="chipFilter">Filter</span><span class="arrow">→</span></div>
+      <div class="step"><span class="chip" id="chipMap">Map</span><span class="arrow">→</span></div>
+      <div class="step"><span class="chip" id="chipSum">Sum</span><span class="arrow">→</span></div>
+      <div class="step"><span class="chip" id="chipResult">Result</span></div>
+      <div class="pill" id="stagePill" style="margin-left:10px;">Challenge 1 / 3</div>
+    </div>
+
+    <div class="main">
+      <!-- Left: primitives -->
+      <section class="panel" aria-label="Primitives">
+        <div class="panel-header">
+          <div class="title">Primitives</div>
+          <div class="pill">Drag</div>
+        </div>
+        <div class="panel-body">
+          <div class="group-title">Primitives</div>
+          <div class="subtle">Drop into matching blanks.</div>
+
+          <div class="draggable" draggable="true" data-type="prim" data-id="filter">
+            <span>filter</span><span class="tag">✔/✖</span>
+          </div>
+          <div class="draggable" draggable="true" data-type="prim" data-id="map">
+            <span>map</span><span class="tag">→</span>
+          </div>
+          <div class="draggable" draggable="true" data-type="prim" data-id="sum">
+            <span>sum</span><span class="tag">numbers → 1</span>
+          </div>
+          <div class="draggable" draggable="true" data-type="prim" data-id="any">
+            <span>any</span><span class="tag">bool</span>
+          </div>
+
+          <div class="hint" id="leftHint" style="display:block;">
+            Tip: Predicates (✔/✖) go with <strong>filter</strong>. Transforms (→) go with <strong>map</strong>.
+          </div>
+        </div>
+      </section>
+
+      <!-- Center: workspace -->
+      <section class="panel" aria-label="Workspace">
+        <div class="panel-header">
+          <div class="title">Workspace</div>
+          <div class="progress">
+            <span class="badge" id="goalBadge">Goal</span>
+            <span class="pill" id="goalText">—</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="arrays" aria-label="Arrays">
+            <div class="tile active" data-array="a1">
+              <div class="label">Array</div>
+              <div id="arrA">[1, 2, 3, 4, 5, 6]</div>
+            </div>
+            <div class="tile" data-array="a2">
+              <div class="label">Array</div>
+              <div id="arrB">[0, 1, 2, 3, 4]</div>
+            </div>
+          </div>
+
+          <div class="workspace" id="workspace">
+            <div class="slot">
+              <div class="slot-label">Fill in the blanks</div>
+              <div class="code-preview" id="templatePreview">Loading…</div>
+            </div>
+
+            <div class="slot" id="slotsArea">
+              <div class="slot-label">Blanks</div>
+              <div class="slot-body" id="blanksRow">
+                <!-- blanks injected -->
+              </div>
+              <div class="hint" id="hint"></div>
+              <div class="result" id="result"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: functions -->
+      <section class="panel" aria-label="Functions">
+        <div class="panel-header">
+          <div class="title">Functions</div>
+          <div class="pill">Drag</div>
+        </div>
+        <div class="panel-body">
+          <div class="group-title">Predicates (✔/✖)</div>
+          <div class="subtle">Return True / False.</div>
+
+          <div class="draggable" draggable="true" data-type="fn" data-kind="predicate" data-id="is_even">
+            <span>is_even(x)</span><span class="tag">✔/✖</span>
+          </div>
+          <div class="draggable" draggable="true" data-type="fn" data-kind="predicate" data-id="greater_than_2">
+            <span>greater_than_2(x)</span><span class="tag">✔/✖</span>
+          </div>
+          <div class="draggable" draggable="true" data-type="fn" data-kind="predicate" data-id="divisible_by_3">
+            <span>divisible_by_3(x)</span><span class="tag">✔/✖</span>
+          </div>
+
+          <div style="margin-top:14px;" class="group-title">Transforms (→)</div>
+          <div class="subtle">Return a new value.</div>
+
+          <div class="draggable" draggable="true" data-type="fn" data-kind="transform" data-id="square">
+            <span>square(x)</span><span class="tag">→</span>
+          </div>
+          <div class="draggable" draggable="true" data-type="fn" data-kind="transform" data-id="double">
+            <span>double(x)</span><span class="tag">→</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="bottom">
+      <div class="btnrow">
+        <button id="backBtn">◀ Back</button>
+        <button id="resetBtn" class="btn-primary">Reset</button>
+      </div>
+      <div class="btnrow">
+        <button id="doneBtn" class="btn-next btn-disabled" disabled>Done</button>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </div>
+
+<script src="assets/nav.js"></script>
+<script>
+  // -----------------------------
+  // Model (simulated evaluation)
+  // -----------------------------
+  const ARRAYS = {
+    a1: [1,2,3,4,5,6],
+    a2: [0,1,2,3,4]
+  };
+
+  const FUNCTIONS = {
+    // predicates
+    is_even: { kind: "predicate", label: "is_even", apply: (x)=> x % 2 === 0 },
+    greater_than_2: { kind: "predicate", label: "greater_than_2", apply: (x)=> x > 2 },
+    divisible_by_3: { kind: "predicate", label: "divisible_by_3", apply: (x)=> x % 3 === 0 },
+    // transforms
+    square: { kind: "transform", label: "square", apply: (x)=> x * x },
+    double: { kind: "transform", label: "double", apply: (x)=> x * 2 }
+  };
+
+  // Primitive semantics (in JS, but we display python-y code)
+  const PRIMS = {
+    filter: { kind: "prim", label: "filter", expects: "predicate", eval: (arr, fn)=> arr.filter(fn.apply) },
+    map:    { kind: "prim", label: "map",    expects: "transform", eval: (arr, fn)=> arr.map(fn.apply) },
+    sum:    { kind: "prim", label: "sum",    expects: null,        eval: (arr)=> arr.reduce((a,b)=>a+b,0) },
+    any:    { kind: "prim", label: "any",    expects: null,        eval: (arr)=> arr.some(Boolean) }
+  };
+
+  // -----------------------------
+  // Challenges (scaffold templates)
+  // -----------------------------
+  const CHALLENGES = [
+    {
+      id: "c1",
+      title: "Challenge 1 / 3",
+      goal: "Compute the sum of the squares of the even numbers in the array.",
+      arrayKey: "a1",
+      // Template is a string with placeholders like {{SLOT:filter_fn}} etc.
+      template:
+`result = sum(
+    map({{SLOT:map_fn}},
+        filter({{SLOT:filter_fn}}, nums)
+    )
+)
+print(result)`,
+      slots: [
+        { slotId: "filter_fn", label: "filter predicate", accepts: "predicate" },
+        { slotId: "map_fn", label: "map transform", accepts: "transform" }
+      ],
+      // Correct choices
+      solution: { filter_fn: "is_even", map_fn: "square" },
+      // Evaluate function that follows the template shape
+      evaluate: (arr, picked) => {
+        const filtered = PRIMS.filter.eval(arr, FUNCTIONS[picked.filter_fn]);
+        const mapped = PRIMS.map.eval(filtered, FUNCTIONS[picked.map_fn]);
+        return PRIMS.sum.eval(mapped);
+      },
+      explainOnSuccess: "This pipeline filters values, transforms them, then combines the result."
+    },
+    {
+      id: "c2",
+      title: "Challenge 2 / 3",
+      goal: "Determine whether any value in the array is divisible by 3.",
+      arrayKey: "a1",
+      template:
+`result = any(
+    filter({{SLOT:filter_fn}}, nums)
+)
+print(result)`,
+      slots: [
+        { slotId: "filter_fn", label: "filter predicate", accepts: "predicate" }
+      ],
+      solution: { filter_fn: "divisible_by_3" },
+      evaluate: (arr, picked) => {
+        const filtered = PRIMS.filter.eval(arr, FUNCTIONS[picked.filter_fn]);
+        // any() over filtered list: True if filtered non-empty
+        return filtered.length > 0;
+      },
+      explainOnSuccess: "Sometimes you don't need map: filter alone can answer a question."
+    },
+    {
+      id: "c3",
+      title: "Challenge 3 / 3",
+      goal: "Return a list of doubled values that are greater than 2.",
+      arrayKey: "a2",
+      template:
+`result = list(
+    map({{SLOT:map_fn}},
+        filter({{SLOT:filter_fn}}, nums)
+    )
+)
+print(result)`,
+      slots: [
+        { slotId: "filter_fn", label: "filter predicate", accepts: "predicate" },
+        { slotId: "map_fn", label: "map transform", accepts: "transform" }
+      ],
+      solution: { filter_fn: "greater_than_2", map_fn: "double" },
+      evaluate: (arr, picked) => {
+        const filtered = PRIMS.filter.eval(arr, FUNCTIONS[picked.filter_fn]);
+        return PRIMS.map.eval(filtered, FUNCTIONS[picked.map_fn]);
+      },
+      explainOnSuccess: "Clear steps: choose values, then transform them."
+    }
+  ];
+
+  // -----------------------------
+  // UI State
+  // -----------------------------
+  let challengeIndex = 0;
+  let selectedArrayKey = "a1";
+  let picked = {}; // slotId -> functionId
+
+  // -----------------------------
+  // DOM
+  // -----------------------------
+  const toastEl = document.getElementById("toast");
+  const stagePill = document.getElementById("stagePill");
+  const goalTextEl = document.getElementById("goalText");
+  const goalBadge = document.getElementById("goalBadge");
+  const templatePreview = document.getElementById("templatePreview");
+  const blanksRow = document.getElementById("blanksRow");
+  const hintEl = document.getElementById("hint");
+  const resultEl = document.getElementById("result");
+  const workspaceEl = document.getElementById("workspace");
+  const doneBtn = document.getElementById("doneBtn");
+
+  const chips = {
+    Data: document.getElementById("chipData"),
+    Filter: document.getElementById("chipFilter"),
+    Map: document.getElementById("chipMap"),
+    Sum: document.getElementById("chipSum"),
+    Result: document.getElementById("chipResult")
+  };
+
+  // Array tiles
+  const tiles = Array.from(document.querySelectorAll(".tile"));
+
+  // -----------------------------
+  // Helpers
+  // -----------------------------
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    window.clearTimeout(showToast._t);
+    showToast._t = window.setTimeout(()=>toastEl.classList.remove("show"), 2100);
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, (c)=>({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#039;"
+    }[c]));
+  }
+
+  function setRibbon(activeStages){
+    Object.values(chips).forEach(c=>c.classList.remove("active"));
+    chips.Data.classList.add("active");
+    (activeStages || []).forEach(s => { if (chips[s]) chips[s].classList.add("active"); });
+  }
+
+  function clearStatus(){
+    workspaceEl.classList.remove("good","warn","bad");
+    hintEl.style.display = "none";
+    hintEl.textContent = "";
+    resultEl.style.display = "none";
+    resultEl.textContent = "";
+  }
+
+  function setStatus(kind, msg){
+    workspaceEl.classList.remove("good","warn","bad");
+    workspaceEl.classList.add(kind);
+    hintEl.style.display = "block";
+    hintEl.textContent = msg;
+  }
+
+  function formatOut(out){
+    if (Array.isArray(out)) return `[${out.join(", ")}]`;
+    return String(out);
+  }
+
+  function updateDoneBtn(enabled){
+    doneBtn.disabled = !enabled;
+    doneBtn.classList.toggle("btn-disabled", !enabled);
+  }
+
+  // -----------------------------
+  // Rendering
+  // -----------------------------
+  function loadChallenge(idx){
+    clearStatus();
+    picked = {};
+    challengeIndex = idx;
+
+    const c = CHALLENGES[challengeIndex];
+    stagePill.textContent = c.title;
+    goalTextEl.textContent = c.goal;
+
+    // Set array selection to challenge default (but allow user to click others)
+    selectedArrayKey = c.arrayKey;
+    setActiveArrayTile(selectedArrayKey);
+
+    // Render template (with placeholders)
+    templatePreview.innerHTML = renderTemplateWithSlots(c.template, picked);
+
+    // Render blanks
+    blanksRow.innerHTML = "";
+    c.slots.forEach(slot => {
+      const blank = document.createElement("div");
+      blank.className = "slot";
+      blank.style.minWidth = "240px";
+      blank.dataset.slotid = slot.slotId;
+      blank.dataset.accepts = slot.accepts;
+
+      blank.innerHTML = `
+        <div class="slot-label">${escapeHtml(slot.label)} (expects ${escapeHtml(slot.accepts)})</div>
+        <div class="slot-body">
+          <span class="placeholder">Drop a ${escapeHtml(slot.accepts)} here</span>
+          <span class="tag">blank</span>
+        </div>
+      `;
+
+      // Make it a drop target
+      allowDrop(blank);
+      blank.addEventListener("drop", onDropIntoBlank(blank));
+
+      blanksRow.appendChild(blank);
+    });
+
+    // Ribbon: only data active at start
+    setRibbon([]);
+    updateDoneBtn(false);
+    showToast(`Loaded ${c.title}.`);
+  }
+
+  function renderTemplateWithSlots(template, pickedMap){
+    // Replace {{SLOT:slotId}} with either function label or ______
+    return escapeHtml(template).replace(/\{\{SLOT:([a-zA-Z0-9_]+)\}\}/g, (_, slotId) => {
+      const fnId = pickedMap[slotId];
+      if (!fnId) return "______";
+      return FUNCTIONS[fnId].label; // e.g. is_even
+    });
+  }
+
+  function setActiveArrayTile(key){
+    tiles.forEach(t => t.classList.remove("active"));
+    const tile = tiles.find(t => t.dataset.array === key);
+    if (tile) tile.classList.add("active");
+  }
+
+  function updateTemplatePreview(){
+    const c = CHALLENGES[challengeIndex];
+    templatePreview.innerHTML = renderTemplateWithSlots(c.template, picked);
+
+    // update ribbon stages based on filled blanks and template content
+    // For simplicity, infer stages from challenge template
+    const stages = [];
+    if (c.template.includes("filter(")) stages.push("Filter");
+    if (c.template.includes("map(")) stages.push("Map");
+    if (c.template.includes("sum(")) stages.push("Sum");
+    // result stage if complete & valid
+    setRibbon(stages);
+  }
+
+  function renderBlankFilled(blankEl, fnId){
+    const fn = FUNCTIONS[fnId];
+    const body = blankEl.querySelector(".slot-body");
+    body.innerHTML = `<span>${escapeHtml(fn.label)}(x)</span><span class="tag">${escapeHtml(fn.kind)}</span>`;
+  }
+
+  function allSlotsFilled(){
+    const c = CHALLENGES[challengeIndex];
+    return c.slots.every(s => Boolean(picked[s.slotId]));
+  }
+
+  function isSolutionCorrect(){
+    const c = CHALLENGES[challengeIndex];
+    for (const [slotId, fnId] of Object.entries(c.solution)){
+      if (picked[slotId] !== fnId) return false;
+    }
+    return true;
+  }
+
+  function evaluateAndMaybeComplete(){
+    clearStatus();
+    updateTemplatePreview();
+
+    const c = CHALLENGES[challengeIndex];
+    const arr = ARRAYS[selectedArrayKey];
+
+    if (!allSlotsFilled()){
+      setStatus("warn", "Fill in all blanks to run this pipeline.");
+      updateDoneBtn(false);
+      return;
+    }
+
+    // Validate kinds per slot
+    for (const slot of c.slots){
+      const fnId = picked[slot.slotId];
+      const fn = FUNCTIONS[fnId];
+      if (!fn || fn.kind !== slot.accepts){
+        setStatus("warn", `That blank expects a ${slot.accepts}.`);
+        updateDoneBtn(false);
+        return;
+      }
+    }
+
+    // Compute output
+    let out;
+    try {
+      out = c.evaluate(arr, picked);
+    } catch (e) {
+      setStatus("bad", "Something went wrong evaluating this pipeline.");
+      updateDoneBtn(false);
+      return;
+    }
+
+    const correct = isSolutionCorrect();
+    resultEl.style.display = "block";
+    resultEl.textContent = `Result:\n${formatOut(out)}`;
+
+    if (correct){
+      workspaceEl.classList.add("good");
+      setStatus("good", `✅ Correct. ${c.explainOnSuccess}`);
+      setRibbon(["Filter","Map","Sum","Result"].filter(s => c.template.includes(s.toLowerCase()+"(") || s==="Result" || s==="Sum" && c.template.includes("sum(")));
+      // Ensure result chip lit:
+      chips.Result.classList.add("active");
+      updateDoneBtn(true);
+      showToast("Nice — correct!");
+    } else {
+      workspaceEl.classList.add("warn");
+      setStatus("warn", "Runs, but doesn’t meet the goal yet. Try different choices.");
+      updateDoneBtn(false);
+    }
+  }
+
+  // -----------------------------
+  // Drag & Drop
+  // -----------------------------
+  function attachDraggables(){
+    document.querySelectorAll(".draggable").forEach(el=>{
+      el.addEventListener("dragstart",(e)=>{
+        el.classList.add("dragging");
+        const payload = {
+          type: el.dataset.type,        // prim or fn
+          id: el.dataset.id,
+          kind: el.dataset.kind || null // predicate/transform for fn
+        };
+        e.dataTransfer.setData("text/plain", JSON.stringify(payload));
+        e.dataTransfer.effectAllowed = "move";
+      });
+      el.addEventListener("dragend",()=>el.classList.remove("dragging"));
+    });
+  }
+
+  function allowDrop(el){
+    el.addEventListener("dragover",(e)=>{
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+    });
+  }
+
+  function onDropIntoBlank(blankEl){
+    return (e)=>{
+      e.preventDefault();
+      const raw = e.dataTransfer.getData("text/plain");
+      if (!raw) return;
+      let payload;
+      try { payload = JSON.parse(raw); } catch { return; }
+
+      // Only functions go into blanks
+      if (payload.type !== "fn"){
+        showToast("Drop a function here.");
+        setStatus("warn", "These blanks accept functions (predicates/transforms), not primitives.");
+        return;
+      }
+
+      const slotId = blankEl.dataset.slotid;
+      const expects = blankEl.dataset.accepts;
+      const fn = FUNCTIONS[payload.id];
+
+      if (!fn){
+        showToast("Unknown function.");
+        return;
+      }
+
+      if (fn.kind !== expects){
+        // snap-back behavior (just reject)
+        showToast(`That blank expects a ${expects}.`);
+        setStatus("warn", expects === "predicate"
+          ? "filter needs a predicate (returns True/False)."
+          : "map needs a transform (returns a value).");
+        return;
+      }
+
+      picked[slotId] = payload.id;
+      renderBlankFilled(blankEl, payload.id);
+      updateTemplatePreview();
+      evaluateAndMaybeComplete();
+    };
+  }
+
+  // -----------------------------
+  // Array selection
+  // -----------------------------
+  tiles.forEach(tile=>{
+    tile.addEventListener("click", ()=>{
+      const key = tile.dataset.array;
+      selectedArrayKey = key;
+      setActiveArrayTile(key);
+      showToast("Array changed.");
+      // Re-evaluate with new data (if filled)
+      evaluateAndMaybeComplete();
+    });
+  });
+
+  // -----------------------------
+  // Buttons
+  // -----------------------------
+  document.getElementById("resetBtn").addEventListener("click", ()=>{
+    loadChallenge(challengeIndex);
+    showToast("Reset blanks.");
+  });
+
+doneBtn.addEventListener("click", ()=>{
+    if (doneBtn.disabled) return;
+
+    if (challengeIndex < CHALLENGES.length - 1){
+      loadChallenge(challengeIndex + 1);
+      return;
+    }
+
+    // Final completion
+    showToast("Completed all challenges!");
+    alert("🎉 Completed!\n\nYou’ve practiced compositional thinking:\nEach step does one thing, and together they describe the solution clearly.");
+  });
+
+  // -----------------------------
+  // Init
+  // -----------------------------
+  attachDraggables();
+  loadChallenge(0);
+</script>
+</body>
+</html>

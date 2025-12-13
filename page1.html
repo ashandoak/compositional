@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Compositionality Interactive — Page 1</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body data-prev="index.html" data-next="page2.html">
+  <div class="app">
+    <div class="top">
+      <h1>A motivating example</h1>
+      <p>
+        Use the code blocks below to construct a program that: loops through the given array, checks whether each value is even,
+        squares the even values, adds them to a running total, and prints the final result.
+      </p>
+    </div>
+
+    <div class="main">
+      <!-- Left: draggable pool -->
+      <section class="panel" aria-label="Code blocks">
+        <div class="panel-header">
+          <div class="title">Code blocks</div>
+          <div class="pill"><span id="poolCount">0</span> remaining</div>
+        </div>
+        <div class="panel-body">
+          <div class="code-note">
+            <div><span class="muted">Given:</span> <strong>nums = [1, 2, 3, 4, 5, 6]</strong></div>
+            <div class="small" style="margin-top:6px;">Drag each line into the workspace. Indentation will be applied automatically.</div>
+          </div>
+          <div id="linePool" class="line-pool" role="list"></div>
+        </div>
+      </section>
+
+      <!-- Right: workspace -->
+      <section class="panel" aria-label="Workspace">
+        <div class="panel-header">
+          <div class="title">Workspace</div>
+          <div class="pill">Build the program</div>
+        </div>
+        <div class="panel-body">
+          <div id="dropzone" class="dropzone" aria-label="Dropzone">
+            <div id="workspaceEmpty" class="workspace-empty">
+              Drop code lines here in the correct order.
+            </div>
+            <div id="workspaceLines" class="workspace-lines" style="display:none;"></div>
+          </div>
+
+          <div id="hint" class="hint" style="display:none;"></div>
+          <div id="results" class="results" style="display:none;"></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="bottom">
+      <div class="btnrow">
+        <button id="resetBtn" title="Reset workspace and reshuffle">Reset</button>
+        <button id="runBtn" class="btn-primary" disabled>Run</button>
+      </div>
+      <div class="btnrow">
+        <button id="nextBtn" class="btn-next" disabled>Next ▶</button>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </div>
+
+<script src="assets/nav.js"></script>
+<script>
+  // ----------------------------
+  // Page 1 state + configuration
+  // ----------------------------
+
+  const GIVEN_NUMS = [1, 2, 3, 4, 5, 6];
+  const EXPECTED_TOTAL = 56;
+
+  // We model "lines" as semantic nodes so we can:
+  // - render Python-looking text
+  // - enforce structural placement (indentation rules)
+  // - validate correctness deterministically without executing Python
+  const LINE_DEFS = [
+    { id: "total_init",   text: "total = 0",          kind: "stmt",   requiredLevel: 0 },
+    { id: "for_loop",     text: "for x in nums:",     kind: "block",  opens: "for", requiredLevel: 0 },
+    { id: "if_even",      text: "if x % 2 == 0:",     kind: "block",  opens: "if",  requiredLevel: 1, mustBeInside: ["for"] },
+    { id: "square",       text: "y = x * x",          kind: "stmt",   requiredLevel: 2, mustBeInside: ["if"] },
+    { id: "accumulate",   text: "total += y",         kind: "stmt",   requiredLevel: 2, mustBeInside: ["if"] },
+    { id: "print",        text: "print(total)",       kind: "stmt",   requiredLevel: 0 }
+  ];
+
+  // The single correct ordering for this Parsons problem:
+  const CORRECT_ORDER = ["total_init", "for_loop", "if_even", "square", "accumulate", "print"];
+
+  // Current workspace ordering (array of ids)
+  let workspace = [];
+
+  // ----------------------------
+  // DOM
+  // ----------------------------
+  const linePoolEl = document.getElementById("linePool");
+  const poolCountEl = document.getElementById("poolCount");
+  const dropzoneEl = document.getElementById("dropzone");
+  const workspaceEmptyEl = document.getElementById("workspaceEmpty");
+  const workspaceLinesEl = document.getElementById("workspaceLines");
+  const hintEl = document.getElementById("hint");
+  const resultsEl = document.getElementById("results");
+  const runBtn = document.getElementById("runBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const toastEl = document.getElementById("toast");
+
+  // ----------------------------
+  // Utilities
+  // ----------------------------
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function getLineDef(id) {
+    return LINE_DEFS.find(l => l.id === id);
+  }
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    window.clearTimeout(showToast._t);
+    showToast._t = window.setTimeout(() => toastEl.classList.remove("show"), 2200);
+  }
+
+  function setHint(msg, level="warn") {
+    hintEl.style.display = "block";
+    hintEl.textContent = msg;
+    dropzoneEl.classList.remove("good", "bad", "warn");
+    dropzoneEl.classList.add(level);
+  }
+
+  function clearHint() {
+    hintEl.style.display = "none";
+    hintEl.textContent = "";
+    dropzoneEl.classList.remove("good", "bad", "warn");
+  }
+
+  function setResults(text) {
+    resultsEl.style.display = "block";
+    resultsEl.textContent = text;
+  }
+
+  function clearResults() {
+    resultsEl.style.display = "none";
+    resultsEl.textContent = "";
+  }
+
+  function updateButtons() {
+    const allPlaced = workspace.length === LINE_DEFS.length;
+    runBtn.disabled = !allPlaced;
+  }
+
+  function updateCounts(poolIds) {
+    poolCountEl.textContent = poolIds.length.toString();
+  }
+
+  // ----------------------------
+  // Structural validation
+  // ----------------------------
+  function computeIndentLevels(orderIds) {
+    // Indentation is derived from block stack in sequence.
+    // We only have two blocks: for and if (nested)
+    // We'll assign levels using a simple state machine.
+    let level = 0;
+    let inFor = false;
+    let inIf = false;
+
+    const levels = new Map();
+
+    for (const id of orderIds) {
+      if (id === "total_init") {
+        levels.set(id, 0);
+      } else if (id === "for_loop") {
+        levels.set(id, 0);
+        inFor = true;
+        level = 1;
+      } else if (id === "if_even") {
+        // must be inside for
+        levels.set(id, inFor ? 1 : 1);
+        inIf = true;
+        level = 2;
+      } else if (id === "square" || id === "accumulate") {
+        levels.set(id, inIf ? 2 : (inFor ? 1 : 0));
+      } else if (id === "print") {
+        levels.set(id, 0);
+      } else {
+        levels.set(id, 0);
+      }
+    }
+    return levels;
+  }
+
+  function structuralPlacementOK(orderIds) {
+    // Enforce minimal structural rules:
+    // - if_even must appear after for_loop
+    // - square and accumulate must appear after if_even
+    // - if_even, square, accumulate must be within "for", and square/accumulate within "if"
+    const idx = new Map(orderIds.map((id, i) => [id, i]));
+
+    // Required sequencing
+    if (!(idx.get("for_loop") < idx.get("if_even"))) return { ok: false, msg: "The if condition must be inside the loop." };
+    if (!(idx.get("if_even") < idx.get("square"))) return { ok: false, msg: "The square operation must be inside the if block." };
+    if (!(idx.get("if_even") < idx.get("accumulate"))) return { ok: false, msg: "The accumulation must be inside the if block." };
+
+    // Print should be after accumulation (so it prints final)
+    if (!(idx.get("accumulate") < idx.get("print"))) return { ok: false, msg: "The print should happen after the total is updated." };
+
+    // total init should be before accumulation
+    if (!(idx.get("total_init") < idx.get("accumulate"))) return { ok: false, msg: "Initialize total before accumulating." };
+
+    return { ok: true };
+  }
+
+  function isExactlyCorrect(orderIds) {
+    if (orderIds.length !== CORRECT_ORDER.length) return false;
+    for (let i = 0; i < CORRECT_ORDER.length; i++) {
+      if (orderIds[i] !== CORRECT_ORDER[i]) return false;
+    }
+    return true;
+  }
+
+  // ----------------------------
+  // Simulation (deterministic)
+  // ----------------------------
+  function simulateSolution() {
+    // Simulate the intended algorithm on GIVEN_NUMS to generate trace.
+    const evens = [];
+    const squares = [];
+    let total = 0;
+    for (const x of GIVEN_NUMS) {
+      if (x % 2 === 0) {
+        evens.push(x);
+        const y = x * x;
+        squares.push(y);
+        total += y;
+      }
+    }
+    return { total, evens, squares };
+  }
+
+  // ----------------------------
+  // Rendering
+  // ----------------------------
+  function renderPool(poolIds) {
+    linePoolEl.innerHTML = "";
+    for (const id of poolIds) {
+      const def = getLineDef(id);
+      const el = document.createElement("div");
+      el.className = "draggable";
+      el.draggable = true;
+      el.dataset.id = id;
+      el.setAttribute("role", "listitem");
+      el.innerHTML = `<span>${escapeHtml(def.text)}</span><span class="tag">drag</span>`;
+
+      el.addEventListener("dragstart", (e) => {
+        el.classList.add("dragging");
+        e.dataTransfer.setData("text/plain", id);
+        e.dataTransfer.effectAllowed = "move";
+      });
+      el.addEventListener("dragend", () => {
+        el.classList.remove("dragging");
+      });
+
+      linePoolEl.appendChild(el);
+    }
+  }
+
+  function renderWorkspace() {
+    workspaceLinesEl.innerHTML = "";
+    if (workspace.length === 0) {
+      workspaceEmptyEl.style.display = "block";
+      workspaceLinesEl.style.display = "none";
+      return;
+    }
+    workspaceEmptyEl.style.display = "none";
+    workspaceLinesEl.style.display = "flex";
+
+    const levels = computeIndentLevels(workspace);
+
+    workspace.forEach((id, idx) => {
+      const def = getLineDef(id);
+      const lvl = levels.get(id) ?? 0;
+
+      const row = document.createElement("div");
+      row.className = "draggable indent";
+      row.style.setProperty("--lvl", String(lvl));
+      row.draggable = true;
+      row.dataset.id = id;
+
+      // Tag changes based on whether it's a block line or statement
+      const kindTag = def.kind === "block" ? "block" : "stmt";
+      row.innerHTML = `<span>${escapeHtml(def.text)}</span><span class="tag">${kindTag}</span>`;
+
+      // allow reordering within workspace via drag
+      row.addEventListener("dragstart", (e) => {
+        row.classList.add("dragging");
+        e.dataTransfer.setData("text/plain", id);
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("from", "workspace");
+      });
+      row.addEventListener("dragend", () => row.classList.remove("dragging"));
+
+      // Drop target behavior for reordering:
+      row.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+      });
+      row.addEventListener("drop", (e) => {
+        e.preventDefault();
+        const draggedId = e.dataTransfer.getData("text/plain");
+        if (!draggedId) return;
+
+        const fromWorkspace = workspace.includes(draggedId);
+        if (!fromWorkspace) return;
+
+        const targetId = row.dataset.id;
+        if (draggedId === targetId) return;
+
+        const fromIdx = workspace.indexOf(draggedId);
+        const toIdx = workspace.indexOf(targetId);
+
+        workspace.splice(fromIdx, 1);
+        workspace.splice(toIdx, 0, draggedId);
+
+        clearHint();
+        clearResults();
+        nextBtn.disabled = true;
+        renderWorkspace();
+        updateButtons();
+      });
+
+      workspaceLinesEl.appendChild(row);
+    });
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    }[c]));
+  }
+
+  // ----------------------------
+  // Dropzone behavior (pool -> workspace)
+  // ----------------------------
+  dropzoneEl.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  });
+
+  dropzoneEl.addEventListener("drop", (e) => {
+    e.preventDefault();
+    const id = e.dataTransfer.getData("text/plain");
+    if (!id) return;
+
+    // If it's already in workspace, ignore (reordering handled by rows)
+    if (workspace.includes(id)) return;
+
+    // Add to end
+    workspace.push(id);
+
+    clearHint();
+    clearResults();
+    nextBtn.disabled = true;
+
+    // If they place a line that is structurally impossible given current ordering,
+    // we don't block it (Parsons problems often allow it), but we can provide gentle hint
+    // once all lines are placed (or immediately if clearly wrong).
+    renderWorkspace();
+
+    // Remove from pool
+    const remaining = currentPoolIds.filter(pid => pid !== id);
+    currentPoolIds = remaining;
+    renderPool(currentPoolIds);
+    updateCounts(currentPoolIds);
+    updateButtons();
+
+    // Optional early nudge: if "if_even" placed before "for_loop", warn
+    if (workspace.includes("if_even") && workspace.indexOf("if_even") < workspace.indexOf("for_loop")) {
+      setHint("Hint: The if condition must be inside the loop (after the for line).", "warn");
+    } else {
+      clearHint();
+    }
+  });
+
+  // Allow dropping back to pool by dropping onto the left panel body
+  linePoolEl.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  });
+
+  linePoolEl.addEventListener("drop", (e) => {
+    e.preventDefault();
+    const id = e.dataTransfer.getData("text/plain");
+    if (!id) return;
+
+    if (!workspace.includes(id)) return; // only accept from workspace
+
+    // Remove from workspace
+    workspace = workspace.filter(x => x !== id);
+
+    // Add back to pool
+    currentPoolIds.push(id);
+
+    clearHint();
+    clearResults();
+    nextBtn.disabled = true;
+
+    renderPool(currentPoolIds);
+    updateCounts(currentPoolIds);
+    renderWorkspace();
+    updateButtons();
+  });
+
+  // ----------------------------
+  // Run + Next + Reset
+  // ----------------------------
+  runBtn.addEventListener("click", () => {
+    clearHint();
+    clearResults();
+    nextBtn.disabled = true;
+
+    // First: structural sanity checks (so we can offer a friendly message)
+    const s = structuralPlacementOK(workspace);
+    if (!s.ok) {
+      setHint(s.msg, "warn");
+      setResults("Output:\n(Unable to run: structure is incomplete)\n\nTrace:\n—");
+      showToast("Not quite — check the structure.");
+      return;
+    }
+
+    // Simulate the intended algorithm regardless of ordering (since this is a Parsons puzzle),
+    // but only mark as correct if the ordering matches the canonical solution and result matches.
+    const sim = simulateSolution();
+
+    const outputText =
+      `Output:\n${sim.total}\n\n` +
+      `Trace:\n` +
+      `Even values → ${sim.evens.join(", ")}\n` +
+      `Squared → ${sim.squares.join(", ")}\n` +
+      `Sum → ${sim.total}`;
+
+    setResults(outputText);
+
+    // Determine correctness:
+    const orderCorrect = isExactlyCorrect(workspace);
+    const resultCorrect = (sim.total === EXPECTED_TOTAL);
+
+    if (orderCorrect && resultCorrect) {
+      dropzoneEl.classList.remove("bad", "warn");
+      dropzoneEl.classList.add("good");
+      setHint("✅ This code runs correctly and produces the expected result.", "good");
+      nextBtn.disabled = false;
+      showToast("Nice — correct result!");
+    } else {
+      // If structure is OK but ordering isn't exact, we treat as incorrect for this Parsons puzzle.
+      // (This keeps "one correct ordering" simple.)
+      dropzoneEl.classList.remove("good", "warn");
+      dropzoneEl.classList.add("bad");
+      setHint("❌ This code runs, but does not produce the correct result (or the blocks are not in the correct order).", "bad");
+      showToast("Close — try reordering.");
+    }
+  });
+
+  resetBtn.addEventListener("click", () => {
+    init();
+    showToast("Reset.");
+  });
+
+  // ----------------------------
+  // Initialization
+  // ----------------------------
+  let currentPoolIds = [];
+
+  function init() {
+    workspace = [];
+    nextBtn.disabled = true;
+    clearHint();
+    clearResults();
+    dropzoneEl.classList.remove("good", "bad", "warn");
+
+    currentPoolIds = shuffle(LINE_DEFS.map(l => l.id));
+
+    renderPool(currentPoolIds);
+    updateCounts(currentPoolIds);
+    renderWorkspace();
+    updateButtons();
+  }
+
+  init();
+</script>
+</body>
+</html>

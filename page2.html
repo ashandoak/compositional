@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Compositionality Interactive — Page 2</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body data-prev="page1.html" data-next="page3.html">
+  <div class="app">
+    <div class="top">
+      <h1>But this approach doesn’t scale</h1>
+      <p>
+        The code you built works correctly. The problem is how easily small changes introduce complexity and bugs.
+        Click highlighted areas to explore why.
+      </p>
+    </div>
+
+    <div class="main">
+      <!-- Left: code -->
+      <section class="panel" aria-label="Annotated code">
+        <div class="panel-header">
+          <div class="title">Antipattern (loop-based)</div>
+          <div class="pill">Click highlights</div>
+        </div>
+        <div class="panel-body">
+          <div class="code-note">
+            <div><span class="muted">Given:</span> <strong>nums = [1, 2, 3, 4, 5, 6]</strong></div>
+            <div class="small" style="margin-top:6px;">
+              This code is correct — the issue is how it behaves as requirements change.
+            </div>
+          </div>
+
+          <div class="codebox" aria-label="Code listing">
+            <div class="line hl" data-key="mixed" aria-label="Mixed concerns (whole loop)">
+              <span class="gutter">1</span>
+              <span class="content">total = 0</span>
+            </div>
+            <div class="line hl" data-key="mixed" aria-label="Mixed concerns (whole loop)">
+              <span class="gutter">2</span>
+              <span class="content">for x in nums:</span>
+            </div>
+            <div class="line hl" data-key="predicate" aria-label="Hidden decision logic">
+              <span class="gutter">3</span>
+              <span class="content">    if x % 2 == 0:</span>
+            </div>
+            <div class="line hl" data-key="transform" aria-label="Transformation tied to control flow">
+              <span class="gutter">4</span>
+              <span class="content">        y = x * x</span>
+            </div>
+            <div class="line hl" data-key="aggregate" aria-label="Aggregation coupled to iteration">
+              <span class="gutter">5</span>
+              <span class="content">        total += y</span>
+            </div>
+            <div class="line hl" data-key="mixed" aria-label="Mixed concerns (whole loop)">
+              <span class="gutter">6</span>
+              <span class="content">print(total)</span>
+            </div>
+          </div>
+
+          <div class="cta">
+            <button id="reqBtn" class="btn-primary">What if the requirement changes?</button>
+            <span class="small">Optional: see how “small changes” ripple.</span>
+          </div>
+
+          <div id="reqBox" class="reqbox" aria-label="Requirement change prompt">
+            <div><strong>New requirement:</strong> “Now also ignore negative numbers.”</div>
+            <div class="small">
+              Notice how the change pulls you back into the loop body — you must decide where to add logic, and keep it consistent.
+            </div>
+            <div class="tagrow" style="margin-top:10px;">
+              <span class="tag" id="focusPredicate">Highlight where you’d change it</span>
+              <span class="tag" id="clearFocus">Clear highlight</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: callout panel -->
+      <section class="panel" aria-label="Explanation panel">
+        <div class="panel-header">
+          <div class="title">Why it doesn’t scale</div>
+          <div class="pill" id="statusPill">No highlight selected</div>
+        </div>
+        <div class="panel-body">
+          <div id="callout" class="callout">
+            <h3>Click a highlighted area</h3>
+            <p>
+              You’ll see short explanations of the common scaling problems: mixed responsibilities, reuse friction,
+              testing friction, and change amplification.
+            </p>
+          </div>
+
+          <div class="callout">
+            <h3>Reminder</h3>
+            <p>
+              This is perfectly valid code. The goal here is to notice how *structure* affects readability, reuse,
+              and bug risk as you evolve the program.
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="bottom">
+      <div class="btnrow">
+        <button id="backBtn">◀ Back</button>
+      </div>
+      <div class="btnrow">
+        <button id="nextBtn" class="btn-next">Next ▶</button>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </div>
+
+<script src="assets/nav.js"></script>
+<script>
+  const toastEl = document.getElementById("toast");
+  const statusPill = document.getElementById("statusPill");
+  const calloutEl = document.getElementById("callout");
+  const reqBtn = document.getElementById("reqBtn");
+  const reqBox = document.getElementById("reqBox");
+  const focusPredicate = document.getElementById("focusPredicate");
+  const clearFocus = document.getElementById("clearFocus");
+
+  const HIGHLIGHTS = Array.from(document.querySelectorAll(".hl"));
+
+  const CALLOUTS = {
+    mixed: {
+      title: "Mixed concerns",
+      text: "This loop filters values, transforms them, and aggregates results all at once. When multiple responsibilities live together, changes in one often affect the others.",
+      pill: "Mixed concerns"
+    },
+    predicate: {
+      title: "Hidden decision logic",
+      text: "The condition for “which values matter” is embedded in the loop. Reusing this rule elsewhere often means copying and pasting it.",
+      pill: "Decision logic"
+    },
+    transform: {
+      title: "Transformation tied to control flow",
+      text: "The transformation only exists inside this specific loop. Changing what happens to values requires editing the loop itself.",
+      pill: "Transformation"
+    },
+    aggregate: {
+      title: "Aggregation coupled to iteration",
+      text: "The accumulation logic depends on the surrounding structure. Adding another aggregation (like a count) increases complexity quickly.",
+      pill: "Aggregation"
+    },
+    ripple: {
+      title: "Small changes ripple outward",
+      text: "Adding another condition, logging, or a second transformation means touching multiple lines. More edits mean more opportunities for subtle bugs.",
+      pill: "Change amplification"
+    }
+  };
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    window.clearTimeout(showToast._t);
+    showToast._t = window.setTimeout(() => toastEl.classList.remove("show"), 2200);
+  }
+
+  function setCallout(key) {
+    const c = CALLOUTS[key];
+    calloutEl.innerHTML = `<h3>${escapeHtml(c.title)}</h3><p>${escapeHtml(c.text)}</p>`;
+    statusPill.textContent = c.pill;
+  }
+
+  function clearActive() {
+    HIGHLIGHTS.forEach(el => el.classList.remove("active", "warn"));
+    statusPill.textContent = "No highlight selected";
+    calloutEl.innerHTML = `<h3>Click a highlighted area</h3>
+      <p>You’ll see short explanations of the common scaling problems: mixed responsibilities, reuse friction, testing friction, and change amplification.</p>`;
+  }
+
+  function activateByKey(key) {
+    clearActive();
+
+    // Key-to-elements mapping:
+    // - "mixed" highlights the whole loop lines (we tagged multiple with mixed)
+    // - others highlight one line
+    const targets = HIGHLIGHTS.filter(el => el.dataset.key === key);
+
+    targets.forEach(el => el.classList.add("active"));
+    setCallout(key);
+
+    // For "mixed", also hint at change amplification subtly
+    if (key === "mixed") {
+      // nothing extra by default
+    }
+  }
+
+  function activateRippleMode() {
+    clearActive();
+    // Show the "ripple" callout and highlight predicate + transform + aggregate + loop context
+    const toMark = ["predicate", "transform", "aggregate", "mixed"];
+    HIGHLIGHTS.forEach(el => {
+      if (toMark.includes(el.dataset.key)) {
+        el.classList.add("active", "warn");
+      }
+    });
+    setCallout("ripple");
+    showToast("Notice how changes pull you into multiple parts of the loop.");
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    }[c]));
+  }
+
+  // Click handlers for code highlights
+  HIGHLIGHTS.forEach(el => {
+    el.addEventListener("click", () => {
+      const key = el.dataset.key;
+      // Clicking one of the "mixed" lines selects mixed
+      activateByKey(key);
+    });
+  });
+
+  // Requirement change panel
+  reqBtn.addEventListener("click", () => {
+    const isOpen = reqBox.style.display === "block";
+    reqBox.style.display = isOpen ? "none" : "block";
+    if (!isOpen) {
+      activateRippleMode();
+    } else {
+      clearActive();
+    }
+  });
+
+  focusPredicate.addEventListener("click", () => {
+    clearActive();
+    // Focus the predicate line + show the ripple callout (because that's where the new requirement likely lands)
+    const pred = HIGHLIGHTS.find(el => el.dataset.key === "predicate");
+    if (pred) pred.classList.add("active", "warn");
+    setCallout("ripple");
+    showToast("You'd likely edit the predicate/condition.");
+  });
+
+  clearFocus.addEventListener("click", () => {
+    clearActive();
+    showToast("Cleared.");
+  });
+
+</script>
+</body>
+</html>

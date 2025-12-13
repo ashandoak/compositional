@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Compositionality Interactive</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body data-prev="" data-next="page1.html">
+  <div class="app">
+    <div class="top">
+      <h1>Compositionality Interactive</h1>
+      <p>Five small pages that teach compositionality using map/filter/sum and the corresponding loop antipattern.</p>
+    </div>
+
+    <div class="main cols-2">
+      <section class="panel">
+        <div class="panel-header">
+          <div class="title">Start</div>
+          <div class="pill">Page 1</div>
+        </div>
+        <div class="panel-body">
+          <div class="callout">
+            <h3>Ready?</h3>
+            <p>Click Next to begin with a Parsons problem.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div class="title">Pages</div>
+          <div class="pill">Quick links</div>
+        </div>
+        <div class="panel-body">
+          <div class="callout">
+            <p>
+              <a href="page1.html">Page 1</a><br />
+              <a href="page2.html">Page 2</a><br />
+              <a href="page3.html">Page 3</a><br />
+              <a href="page4.html">Page 4</a><br />
+              <a href="page5.html">Page 5</a>
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="bottom">
+      <div class="btnrow"></div>
+      <div class="btnrow">
+        <button id="nextBtn" class="btn-next">Next ▶</button>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <script src="assets/nav.js"></script>
+</body>
+</html>

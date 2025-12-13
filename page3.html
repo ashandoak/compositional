@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Compositionality Interactive — Page 3</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body data-prev="page2.html" data-next="page4.html">
+  <div class="app">
+    <div class="top">
+      <h1>Functional primitives</h1>
+      <p>
+        A functional primitive is a general-purpose operation that accepts another function as input.
+        Try combining a primitive with a function to see what it does.
+      </p>
+    </div>
+
+    <div class="ribbon" aria-label="Concept ribbon">
+      <div class="step"><span class="chip" id="chipData">Data</span><span class="arrow">→</span></div>
+      <div class="step"><span class="chip" id="chipFilter">Filter</span><span class="arrow">→</span></div>
+      <div class="step"><span class="chip" id="chipMap">Map</span><span class="arrow">→</span></div>
+      <div class="step"><span class="chip" id="chipSum">Sum</span><span class="arrow">→</span></div>
+      <div class="step"><span class="chip" id="chipResult">Result</span></div>
+      <div class="pill" id="stagePill" style="margin-left:10px;">Choose a primitive</div>
+    </div>
+
+    <div class="main">
+      <!-- Left: primitives -->
+      <section class="panel" aria-label="Primitives">
+        <div class="panel-header">
+          <div class="title">Primitives</div>
+          <div class="pill">Drag one</div>
+        </div>
+        <div class="panel-body">
+          <div class="group-title">Primitives</div>
+          <div class="subtle">These are generalized operations.</div>
+
+          <div class="draggable" draggable="true" data-type="primitive" data-id="filter">
+            <span>filter( predicate, data )</span>
+            <span class="tag">expects ✔/✖</span>
+          </div>
+          <div class="draggable" draggable="true" data-type="primitive" data-id="map">
+            <span>map( transform, data )</span>
+            <span class="tag">expects →</span>
+          </div>
+          <div class="draggable" draggable="true" data-type="primitive" data-id="sum">
+            <span>sum( data )</span>
+            <span class="tag">numbers → 1</span>
+          </div>
+
+          <div style="margin-top:12px;" class="hint" id="leftHint"></div>
+        </div>
+      </section>
+
+      <!-- Center: workspace -->
+      <section class="panel" aria-label="Workspace">
+        <div class="panel-header">
+          <div class="title">Workspace</div>
+          <div class="pill">One primitive at a time</div>
+        </div>
+        <div class="panel-body">
+          <div class="arrays" aria-label="Arrays">
+            <div class="tile active" data-array="a1">
+              <div class="label">Array A</div>
+              <div>[1, 2, 3, 4, 5, 6]</div>
+            </div>
+            <div class="tile" data-array="a2">
+              <div class="label">Array B</div>
+              <div>[0, 1, 2, 3, 4]</div>
+            </div>
+            <div class="tile" data-array="a3">
+              <div class="label">Array C</div>
+              <div>[-3, -2, -1, 0, 1, 2]</div>
+            </div>
+          </div>
+
+          <div class="workspace" id="workspace" aria-label="Interactive workspace">
+            <div class="ws-row">
+              <div class="slot" id="slotPrimitive">
+                <div class="slot-label">Primitive</div>
+                <div class="slot-body">
+                  <span class="placeholder">Drop a primitive here</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="ws-row">
+              <div class="slot" id="slotFunction">
+                <div class="slot-label">Function (optional)</div>
+                <div class="slot-body">
+                  <span class="placeholder">Drop a predicate or transform here</span>
+                </div>
+              </div>
+              <div class="slot" id="slotArray">
+                <div class="slot-label">Array</div>
+                <div class="slot-body">
+                  <span id="arrayText" class="placeholder">nums = [1, 2, 3, 4, 5, 6]</span>
+                  <span class="tag">selected</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="slot" style="min-width:auto;">
+                <div class="slot-label">Python preview</div>
+                <div class="code-preview" id="preview"># Drag a primitive and (if needed) a function</div>
+              </div>
+              <div class="result" id="result"></div>
+              <div class="hint" id="hint"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: functions -->
+      <section class="panel" aria-label="Functions and predicates">
+        <div class="panel-header">
+          <div class="title">Functions</div>
+          <div class="pill">Drag one</div>
+        </div>
+        <div class="panel-body">
+          <div class="group-title">Predicates (✔/✖)</div>
+          <div class="subtle">Return True / False.</div>
+
+          <div class="draggable" draggable="true" data-type="fn" data-kind="predicate" data-id="is_even">
+            <span>is_even(x)</span><span class="tag">✔/✖</span>
+          </div>
+          <div class="draggable" draggable="true" data-type="fn" data-kind="predicate" data-id="is_positive">
+            <span>is_positive(x)</span><span class="tag">✔/✖</span>
+          </div>
+          <div class="draggable" draggable="true" data-type="fn" data-kind="predicate" data-id="greater_than_2">
+            <span>greater_than_2(x)</span><span class="tag">✔/✖</span>
+          </div>
+
+          <div style="margin-top:14px;" class="group-title">Transforms (→)</div>
+          <div class="subtle">Return a new value.</div>
+
+          <div class="draggable" draggable="true" data-type="fn" data-kind="transform" data-id="square">
+            <span>square(x)</span><span class="tag">→</span>
+          </div>
+          <div class="draggable" draggable="true" data-type="fn" data-kind="transform" data-id="double">
+            <span>double(x)</span><span class="tag">→</span>
+          </div>
+          <div class="draggable" draggable="true" data-type="fn" data-kind="transform" data-id="negate">
+            <span>negate(x)</span><span class="tag">→</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="bottom">
+      <div class="btnrow">
+        <button id="backBtn">◀ Back</button>
+        <button id="resetBtn" class="btn-primary">Reset</button>
+      </div>
+      <div class="btnrow">
+        <button id="nextBtn" class="btn-next">Next ▶</button>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </div>
+
+<script src="assets/nav.js"></script>
+<script>
+  // ---- Data model (simulated evaluation) ----
+  const ARRAYS = {
+    a1: [1,2,3,4,5,6],
+    a2: [0,1,2,3,4],
+    a3: [-3,-2,-1,0,1,2]
+  };
+
+  const FUNCTIONS = {
+    // predicates
+    is_even: { kind: "predicate", label: "is_even", apply: (x) => x % 2 === 0 },
+    is_positive: { kind: "predicate", label: "is_positive", apply: (x) => x > 0 },
+    greater_than_2: { kind: "predicate", label: "greater_than_2", apply: (x) => x > 2 },
+    // transforms
+    square: { kind: "transform", label: "square", apply: (x) => x * x },
+    double: { kind: "transform", label: "double", apply: (x) => x * 2 },
+    negate: { kind: "transform", label: "negate", apply: (x) => -x }
+  };
+
+  const PRIMITIVES = {
+    filter: {
+      label: "filter",
+      stage: "Filter",
+      needsFunction: true,
+      accepts: "predicate",
+      preview: (fnLabel) => `result = list(filter(${fnLabel}, nums))\nprint(result)`,
+      explain: "filter keeps values that satisfy the predicate (True/False test).",
+      eval: (arr, fn) => arr.filter(fn.apply)
+    },
+    map: {
+      label: "map",
+      stage: "Map",
+      needsFunction: true,
+      accepts: "transform",
+      preview: (fnLabel) => `result = list(map(${fnLabel}, nums))\nprint(result)`,
+      explain: "map transforms every value independently.",
+      eval: (arr, fn) => arr.map(fn.apply)
+    },
+    sum: {
+      label: "sum",
+      stage: "Sum",
+      needsFunction: false,
+      accepts: null,
+      preview: () => `result = sum(nums)\nprint(result)`,
+      explain: "sum combines all numeric values into a single result.",
+      eval: (arr) => arr.reduce((a,b) => a + b, 0)
+    }
+  };
+
+  // ---- UI State ----
+  let selectedArrayKey = "a1";
+  let selectedPrimitive = null; // "filter" | "map" | "sum"
+  let selectedFunction = null;  // key in FUNCTIONS
+
+  // ---- DOM ----
+  const toastEl = document.getElementById("toast");
+  const workspaceEl = document.getElementById("workspace");
+  const slotPrimitiveEl = document.getElementById("slotPrimitive");
+  const slotFunctionEl = document.getElementById("slotFunction");
+  const slotArrayEl = document.getElementById("slotArray");
+  const previewEl = document.getElementById("preview");
+  const resultEl = document.getElementById("result");
+  const hintEl = document.getElementById("hint");
+  const leftHintEl = document.getElementById("leftHint");
+  const stagePill = document.getElementById("stagePill");
+  const arrayText = document.getElementById("arrayText");
+
+  const chips = {
+    Data: document.getElementById("chipData"),
+    Filter: document.getElementById("chipFilter"),
+    Map: document.getElementById("chipMap"),
+    Sum: document.getElementById("chipSum"),
+    Result: document.getElementById("chipResult")
+  };
+
+  // ---- Helpers ----
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    window.clearTimeout(showToast._t);
+    showToast._t = window.setTimeout(()=>toastEl.classList.remove("show"), 2000);
+  }
+
+  function clearWorkspaceStatus(){
+    workspaceEl.classList.remove("good","warn","bad");
+    hintEl.style.display = "none";
+    hintEl.textContent = "";
+    resultEl.style.display = "none";
+    resultEl.textContent = "";
+    leftHintEl.style.display = "none";
+    leftHintEl.textContent = "";
+  }
+
+  function setWorkspaceStatus(kind, msg){
+    workspaceEl.classList.remove("good","warn","bad");
+    workspaceEl.classList.add(kind);
+    hintEl.style.display = "block";
+    hintEl.textContent = msg;
+  }
+
+  function setLeftHint(msg){
+    leftHintEl.style.display = "block";
+    leftHintEl.textContent = msg;
+  }
+
+  function setRibbon(activeStage){
+    // Reset chips
+    Object.values(chips).forEach(ch => ch.classList.remove("active"));
+    // Data is always present
+    chips.Data.classList.add("active");
+
+    if (activeStage === "Filter") chips.Filter.classList.add("active");
+    if (activeStage === "Map") chips.Map.classList.add("active");
+    if (activeStage === "Sum") chips.Sum.classList.add("active");
+    if (activeStage === "Result") chips.Result.classList.add("active");
+  }
+
+  function renderSlots(){
+    // Primitive slot
+    const primBody = slotPrimitiveEl.querySelector(".slot-body");
+    primBody.innerHTML = selectedPrimitive
+      ? `<span>${escapeHtml(displayPrimitiveText(selectedPrimitive))}</span><span class="tag">primitive</span>`
+      : `<span class="placeholder">Drop a primitive here</span>`;
+
+    // Function slot
+    const fnBody = slotFunctionEl.querySelector(".slot-body");
+    if (!selectedPrimitive){
+      fnBody.innerHTML = `<span class="placeholder">Drop a predicate or transform here</span>`;
+    } else {
+      const prim = PRIMITIVES[selectedPrimitive];
+      if (!prim.needsFunction){
+        fnBody.innerHTML = `<span class="placeholder">(not needed for ${prim.label})</span><span class="tag">n/a</span>`;
+      } else if (selectedFunction){
+        const f = FUNCTIONS[selectedFunction];
+        fnBody.innerHTML = `<span>${escapeHtml(displayFnText(selectedFunction))}</span><span class="tag">${f.kind}</span>`;
+      } else {
+        fnBody.innerHTML = `<span class="placeholder">Drop a ${prim.accepts} here</span>`;
+      }
+    }
+
+    // Array slot
+    arrayText.textContent = `nums = [${ARRAYS[selectedArrayKey].join(", ")}]`;
+
+    // Preview + evaluation
+    renderPreviewAndEval();
+  }
+
+  function displayPrimitiveText(pid){
+    if (pid === "filter") return "filter( predicate, data )";
+    if (pid === "map") return "map( transform, data )";
+    if (pid === "sum") return "sum( data )";
+    return pid;
+  }
+
+  function displayFnText(fid){
+    const f = FUNCTIONS[fid];
+    if (!f) return fid;
+    return `${f.label}(x)`;
+  }
+
+  function renderPreviewAndEval(){
+    clearWorkspaceStatus();
+
+    if (!selectedPrimitive){
+      stagePill.textContent = "Choose a primitive";
+      previewEl.textContent = "# Drag a primitive and (if needed) a function";
+      setRibbon(null);
+      return;
+    }
+
+    const prim = PRIMITIVES[selectedPrimitive];
+    stagePill.textContent = `${prim.label} selected`;
+    setRibbon(prim.stage);
+
+    // Validate combination
+    const needsFn = prim.needsFunction;
+    if (needsFn && !selectedFunction){
+      previewEl.textContent = "# Add a function to complete this call";
+      setWorkspaceStatus("warn", `Tip: ${prim.label} needs a ${prim.accepts}.`);
+      return;
+    }
+
+    if (needsFn && selectedFunction){
+      const f = FUNCTIONS[selectedFunction];
+      if (f.kind !== prim.accepts){
+        // invalid combination
+        previewEl.textContent = "# That function doesn't fit here";
+        setWorkspaceStatus("warn", invalidHint(prim.label, prim.accepts));
+        // We keep the selection, but show guidance; you can also snap-back at drop time.
+        return;
+      }
+    }
+
+    // Build preview code (Python-looking)
+    const fnLabel = selectedFunction ? FUNCTIONS[selectedFunction].label : null;
+    previewEl.textContent = prim.preview(fnLabel);
+
+    // Evaluate
+    const arr = ARRAYS[selectedArrayKey];
+    let out;
+    if (prim.needsFunction){
+      out = prim.eval(arr, FUNCTIONS[selectedFunction]);
+    } else {
+      out = prim.eval(arr);
+    }
+
+    resultEl.style.display = "block";
+    resultEl.textContent = `Result:\n${formatOut(out)}\n\n${prim.explain}`;
+    workspaceEl.classList.add("good");
+    // Light Result chip when valid
+    chips.Result.classList.add("active");
+  }
+
+  function invalidHint(primLabel, expects){
+    if (primLabel === "filter") return "filter needs a function that returns True or False.";
+    if (primLabel === "map") return "map needs a function that returns a value (a transformation).";
+    return `This primitive expects a ${expects}.`;
+  }
+
+  function formatOut(out){
+    if (Array.isArray(out)) return `[${out.join(", ")}]`;
+    return String(out);
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, (c)=>({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#039;"
+    }[c]));
+  }
+
+  function resetAll(){
+    selectedPrimitive = null;
+    selectedFunction = null;
+    // keep selected array
+    renderSlots();
+    showToast("Reset.");
+  }
+
+  // ---- Drag & Drop handling ----
+  function attachDraggables(){
+    document.querySelectorAll(".draggable").forEach(el=>{
+      el.addEventListener("dragstart", (e)=>{
+        el.classList.add("dragging");
+        const payload = {
+          type: el.dataset.type,
+          id: el.dataset.id,
+          kind: el.dataset.kind || null
+        };
+        e.dataTransfer.setData("text/plain", JSON.stringify(payload));
+        e.dataTransfer.effectAllowed = "move";
+      });
+      el.addEventListener("dragend", ()=>el.classList.remove("dragging"));
+    });
+  }
+
+  function allowDrop(el){
+    el.addEventListener("dragover", (e)=>{
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+    });
+  }
+
+  function handleDropOnSlot(slotKind){
+    return (e)=>{
+      e.preventDefault();
+      const raw = e.dataTransfer.getData("text/plain");
+      if (!raw) return;
+
+      let payload;
+      try { payload = JSON.parse(raw); } catch { return; }
+
+      if (slotKind === "primitive"){
+        if (payload.type !== "primitive") {
+          showToast("Drop a primitive here.");
+          return;
+        }
+        selectedPrimitive = payload.id;
+        // When primitive changes, clear function to avoid stale mismatch
+        selectedFunction = null;
+        renderSlots();
+        showToast(`Selected ${payload.id}.`);
+        return;
+      }
+
+      if (slotKind === "function"){
+        if (payload.type !== "fn") {
+          showToast("Drop a function here.");
+          return;
+        }
+        if (!selectedPrimitive){
+          setWorkspaceStatus("warn", "Pick a primitive first.");
+          showToast("Choose a primitive first.");
+          return;
+        }
+        const prim = PRIMITIVES[selectedPrimitive];
+        if (!prim.needsFunction){
+          showToast(`${prim.label} doesn't take a function.`);
+          setWorkspaceStatus("warn", `${prim.label} works directly on numbers.`);
+          return;
+        }
+
+        // Enforce compatibility at drop time (snap-back behavior)
+        const fn = FUNCTIONS[payload.id];
+        if (fn.kind !== prim.accepts){
+          setWorkspaceStatus("warn", invalidHint(prim.label, prim.accepts));
+          showToast("That function doesn't fit here.");
+          // Do not set selectedFunction
+          return;
+        }
+
+        selectedFunction = payload.id;
+        renderSlots();
+        showToast(`Added ${payload.id}.`);
+        return;
+      }
+    };
+  }
+
+  // ---- Array selection ----
+  function attachArrayTiles(){
+    document.querySelectorAll(".tile").forEach(tile=>{
+      tile.addEventListener("click", ()=>{
+        document.querySelectorAll(".tile").forEach(t=>t.classList.remove("active"));
+        tile.classList.add("active");
+        selectedArrayKey = tile.dataset.array;
+        renderSlots();
+        showToast("Array changed.");
+      });
+    });
+  }
+
+  document.getElementById("resetBtn").addEventListener("click", resetAll);
+
+  // ---- Setup drop targets ----
+  allowDrop(slotPrimitiveEl);
+  allowDrop(slotFunctionEl);
+
+  slotPrimitiveEl.addEventListener("drop", handleDropOnSlot("primitive"));
+  slotFunctionEl.addEventListener("drop", handleDropOnSlot("function"));
+
+  // ---- Initialize ----
+  attachDraggables();
+  attachArrayTiles();
+  renderSlots();
+  setRibbon(null);
+
+  // Small hint in left panel
+  setLeftHint("Try: filter + is_even, or map + square, or sum (no function needed).");
+</script>
+</body>
+</html>
