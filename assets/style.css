@@ -566,6 +566,33 @@ body[data-page="1"] #workspaceEmpty{
   padding-top: 6px;               /* reduce extra padding you had */
 }
 
+/* Fixed "given" line in workspace */
+body[data-page="1"] .given-line{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  font-family: var(--mono);
+  font-size: 13px;
+
+  padding: 10px 12px;
+  margin-bottom: 12px;
+
+  border-radius: 12px;
+  background: rgba(75,123,255,0.08);
+  border: 1px solid rgba(75,123,255,0.25);
+
+  color: var(--text);
+  user-select: none;
+}
+
+body[data-page="1"] .given-line .tag.given{
+  background: rgba(75,123,255,0.18);
+  border-color: rgba(75,123,255,0.35);
+  color: var(--text);
+}
+
 /* =========================
    PAGE 1: LOCK GRID INTO ONE ROW (NO AUTO-PLACEMENT SURPRISES)
    ========================= */
