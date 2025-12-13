@@ -44,14 +44,15 @@ body{
   height: 100%;
   box-sizing: border-box;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto minmax(520px, 1fr) auto;
   gap: 18px; /* was 14px */
 }
-.top { text-align: center; padding: 12px 10px; }
-.top h1 { margin: 0; font-size: 18px; letter-spacing: 0.2px; font-weight: 700; }
-.top p { margin: 8px auto 0; max-width: 900px; color: var(--muted); line-height: 1.45; font-size: 14px; }
+.top { text-align: center; padding: 14px 10px 6px; }
+.top h1 { margin: 0; font-size: 32px; line-height: 1.10; letter-spacing: 0.2px; font-weight: 700; }
+.top p { margin: 8px auto 0; max-width: 980px; color: rgba(11,18,32,0.72); line-height: 1.55; font-size: 16px; }
 
-.main { display: grid; gap: 14px; min-height: 0; }
+.main { display: grid; gap: 14px; min-height: 0; 
+  align-items: start;}
 .main.cols-2 { grid-template-columns: 1fr 1fr; }
 .main.cols-2-wide { grid-template-columns: 1.35fr 0.9fr; }
 .main.cols-2-wide-rev { grid-template-columns: 0.9fr 1.35fr; }
@@ -422,21 +423,6 @@ button,
    PAGE 1: WORKSPACE CENTERED
    ========================= */
 
-/* Bigger, more directive explainer */
-body[data-page="1"] .top{
-  padding: 14px 10px 6px;
-}
-body[data-page="1"] .top h1{
-  font-size: 32px;
-  line-height: 1.10;
-  letter-spacing: 0.2px;
-}
-body[data-page="1"] .top p{
-  font-size: 16px;
-  line-height: 1.55;
-  max-width: 980px;
-  color: rgba(11,18,32,0.72);
-}
 
 /* 3-column grid: spacer | centered workspace | right code bank */
 body[data-page="1"] .main.page1-grid{
@@ -521,20 +507,8 @@ body[data-page="1"] .panel.code-bank .draggable:hover{
    PAGE 1: VERTICAL CENTER + TALLER INTERACTIVE
    ========================= */
 
-/* Make the middle row feel bigger, and keep it centered visually */
-body[data-page="1"] .app{
-  grid-template-rows: auto minmax(520px, 1fr) auto; /* forces a larger middle band */
-}
 
-/* Give the grid row content room and center it */
-body[data-page="1"] .main.page1-grid{
-  min-height: 520px;      /* “2–3x taller” effect vs previous */
-}
 
-/* Make the workspace panel taller */
-body[data-page="1"] .panel.workspace{
-  min-height: 520px;
-}
 
 /* Keep code bank aligned with the workspace (not higher) */
 body[data-page="1"] .panel.code-bank{
