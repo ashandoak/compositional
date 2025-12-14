@@ -591,3 +591,71 @@ body[data-page="1"] .panel.code-bank{
   grid-row: 1;
   align-self: start;
 }
+
+/* =========================
+   PAGE 2: MATCH PAGE 1 HERO LAYOUT
+   ========================= */
+
+/* 3-column grid: spacer | centered code (hero) | right bubble space */
+body[data-page="2"] .main.page2-grid{
+  display: grid;
+  grid-template-columns: 1fr minmax(560px, 760px) 360px;
+  grid-template-areas: "spacer hero bubbles";
+  gap: 14px;
+  align-items: start;
+  align-content: start;
+  min-height: 520px;
+}
+
+body[data-page="2"] .page2-spacer{ grid-area: spacer; min-height: 1px; }
+body[data-page="2"] .panel.page2-hero{ grid-area: hero; }
+body[data-page="2"] .panel.page2-bubbles{ grid-area: bubbles; }
+
+/* Make the center panel feel like Page 1’s hero workspace */
+body[data-page="2"] .panel.page2-hero{
+  box-shadow: 0 22px 70px rgba(11,18,32,0.14);
+  border-color: rgba(75,123,255,0.26);
+}
+
+/* Remove headings inside the interactive window (requested) */
+body[data-page="2"] .panel.page2-hero .panel-header{
+  display: none;
+}
+
+/* Right side should feel like Page 1 “detached cards area” */
+body[data-page="2"] .panel.page2-bubbles{
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  opacity: 0.92;
+}
+
+/* Remove bubble panel header so there’s no extra framing/heading */
+body[data-page="2"] .panel.page2-bubbles .panel-header{
+  display: none;
+}
+
+/* Bubble spacing: align to top like Page 1 code cards column */
+body[data-page="2"] .panel.page2-bubbles .panel-body{
+  padding: 6px 0 0;
+}
+
+/* Make callout look like it “belongs” in the floating area */
+body[data-page="2"] .panel.page2-bubbles .callout{
+  box-shadow: 0 10px 24px rgba(11,18,32,0.10);
+  background: rgba(255,255,255,0.92);
+  border-color: rgba(11,18,32,0.14);
+}
+
+/* Responsive: stack */
+@media (max-width: 980px){
+  body[data-page="2"] .main.page2-grid{
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "hero"
+      "bubbles";
+  }
+  body[data-page="2"] .page2-spacer{ display:none; }
+  body[data-page="2"] .panel.page2-bubbles{ opacity: 1; }
+  body[data-page="2"] .panel.page2-bubbles .panel-body{ padding-top: 10px; }
+}
