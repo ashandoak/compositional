@@ -1053,3 +1053,119 @@ body[data-page="4"] #midRight{
 }
 
 
+/* =========================
+   PAGE 5: MATCH PAGE 3 (LAYOUT + TOOLBOX + TERMINAL)
+   ========================= */
+
+/* Layout grid identical to Page 3 */
+body[data-page="5"] .main.page3-grid{
+  display: grid;
+  grid-template-columns: 1fr minmax(560px, 760px) 360px;
+  grid-template-areas: "spacer hero bank";
+  gap: 14px;
+  align-items: start;
+  align-content: start;
+  min-height: 520px;
+}
+
+body[data-page="5"] .page3-spacer{ grid-area: spacer; min-height: 1px; }
+body[data-page="5"] .panel.page3-hero{ grid-area: hero; }
+body[data-page="5"] .panel.page3-bank{ grid-area: bank; }
+
+/* Hero + bank styling identical to Page 3 */
+body[data-page="5"] .panel.page3-hero{
+  box-shadow: 0 22px 70px rgba(11,18,32,0.14);
+  border-color: rgba(75,123,255,0.26);
+}
+body[data-page="5"] .panel.page3-hero .panel-header{ display: none; }
+
+body[data-page="5"] .panel.page3-bank{
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  opacity: 0.92;
+}
+body[data-page="5"] .panel.page3-bank .panel-header{ display: none; }
+body[data-page="5"] .panel.page3-bank .panel-body{ padding: 6px 0 0; }
+
+/* Workspace readability + “card” draggables identical to Page 3 */
+body[data-page="5"] #rightHint{ display: none !important; }
+
+body[data-page="5"] .panel.page3-bank,
+body[data-page="5"] .panel.page3-bank .panel-body{
+  overflow: visible !important;
+  background: transparent !important;
+}
+
+body[data-page="5"] .panel.page3-bank .draggable{
+  background: rgba(255,255,255,0.92);
+  color: var(--text);
+  border-color: rgba(11,18,32,0.14);
+  box-shadow: 0 10px 24px rgba(11,18,32,0.10);
+}
+body[data-page="5"] .panel.page3-bank .draggable:hover{
+  box-shadow: 0 14px 32px rgba(11,18,32,0.14);
+}
+
+/* Page 3 workspace surface + slots */
+body[data-page="5"] .page3-workspace{
+  background: transparent !important;
+  border-color: transparent !important;
+  padding: 8px !important;
+  min-height: 420px;
+}
+
+body[data-page="5"] .page3-workspace .slot{
+  background: rgba(255,255,255,0.92) !important;
+  border-color: rgba(11,18,32,0.14) !important;
+  box-shadow: 0 10px 24px rgba(11,18,32,0.08);
+}
+
+body[data-page="5"] .page3-workspace .slot-label{
+  color: rgba(11,18,32,0.55) !important;
+}
+
+body[data-page="5"] .page3-workspace .placeholder{
+  color: rgba(11,18,32,0.42) !important;
+}
+
+/* Locked slot state identical to Page 3 */
+body[data-page="5"] .page3-workspace .slot.locked{
+  background: rgba(255,255,255,0.96) !important;
+  border-color: rgba(75,123,255,0.28) !important;
+  box-shadow:
+    0 14px 34px rgba(11,18,32,0.10),
+    0 0 0 3px rgba(75,123,255,0.10) inset;
+}
+
+/* Terminal look identical to Page 3 */
+body[data-page="5"] .terminal{
+  border: 1px solid rgba(11,18,32,0.14);
+  border-radius: 14px;
+  background: rgba(12,18,30,0.92);
+  box-shadow: 0 14px 40px rgba(11,18,32,0.12);
+  padding: 12px;
+  font-family: var(--mono);
+  color: rgba(233,238,251,0.92);
+}
+
+body[data-page="5"] .terminal .term-title{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* Responsive stacking identical to Page 3 */
+@media (max-width: 980px){
+  body[data-page="5"] .main.page3-grid{
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "hero"
+      "bank";
+  }
+  body[data-page="5"] .page3-spacer{ display:none; }
+  body[data-page="5"] .panel.page3-bank{ opacity: 1; }
+  body[data-page="5"] .panel.page3-bank .panel-body{ padding-top: 10px; }
+}
