@@ -993,3 +993,63 @@ body[data-page="3"] .page3-workspace .slot-body *{
   color: var(--text) !important;
 }
 
+/* Page 4 — layout only (match Page 2 feel; code side-by-side; explanation below) */
+body[data-page="4"] .main.page4-grid{
+  display: grid;
+  grid-template-columns: 1fr minmax(720px, 980px) 1fr;
+  gap: 16px;
+  align-items: start;
+  padding: 18px 16px 8px;
+}
+
+body[data-page="4"] .page4-spacer{
+  min-height: 1px;
+}
+
+body[data-page="4"] .page4-hero{
+  width: 100%;
+}
+
+body[data-page="4"] .page4-codegrid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+/* keeps each code column self-contained */
+body[data-page="4"] .page4-codecol{
+  min-width: 0;
+}
+
+body[data-page="4"] .page4-subhead{
+  font-weight: 700;
+  margin: 2px 0 10px;
+  letter-spacing: 0.02em;
+}
+
+/* explanation panel centered under the hero */
+body[data-page="4"] .page4-explain-wrap{
+  display: grid;
+  grid-template-columns: 1fr minmax(720px, 980px) 1fr;
+  padding: 0 16px 10px;
+}
+
+body[data-page="4"] .page4-explain{
+  grid-column: 2;
+}
+
+body[data-page="4"] .page4-footer-row{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* intermediates hidden until toggled */
+body[data-page="4"] #midLeft,
+body[data-page="4"] #midRight{
+  display: none;
+}
+
+
