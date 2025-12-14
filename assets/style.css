@@ -1169,3 +1169,54 @@ body[data-page="5"] .terminal .term-title{
   body[data-page="5"] .panel.page3-bank{ opacity: 1; }
   body[data-page="5"] .panel.page3-bank .panel-body{ padding-top: 10px; }
 }
+
+/* Page 3 terminal: Run button */
+body[data-page="3"] .term-run{
+  appearance: none;
+  border: 1px solid rgba(233,238,251,0.22);
+  background: rgba(233,238,251,0.10);
+  color: rgba(233,238,251,0.92);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: transform .06s ease, background .12s ease, border-color .12s ease, opacity .12s ease;
+}
+
+body[data-page="3"] .term-run.is-enabled{
+  background: rgba(75,123,255,0.22);
+  border-color: rgba(75,123,255,0.38);
+}
+
+body[data-page="3"] .term-run:active{
+  transform: translateY(1px);
+}
+
+body[data-page="3"] .term-run:disabled{
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Blinking cursor inside terminal typing areas */
+body[data-page="3"] .term-typing{
+  position: relative;
+}
+
+body[data-page="3"] .term-cursor{
+  display: inline-block;
+  width: 8px;
+  margin-left: 2px;
+  transform: translateY(1px);
+}
+
+body[data-page="3"] .term-cursor::before{
+  content: "▍";
+  opacity: 0.9;
+  animation: termBlink 1s steps(2, end) infinite;
+}
+
+@keyframes termBlink{
+  0%, 49% { opacity: 0.9; }
+  50%, 100% { opacity: 0.0; }
+}
