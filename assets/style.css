@@ -955,14 +955,11 @@ body[data-page="4"] .page4-codecol{ min-width: 0; }
 
 
 /* =========================
-   PAGE 4: EXPLAINER — MATCH PAGE 2 EXACTLY
+   PAGE 4: EXPLAINER — MATCH PAGE 2 EXACTLY (NO OVERLAP)
    ========================= */
 
-body[data-page="4"] .page4-explain-wrap{
-  margin-top: -400px;
-  padding-top: 0;
-  padding-bottom: 4px;
-}
+
+
 
 body[data-page="4"] .panel.page4-explain{
   background: transparent;
@@ -992,37 +989,37 @@ body[data-page="4"] .panel.page4-explain .explain{
 
 /* Title line like Page 2 */
 body[data-page="4"] .panel.page4-explain .explain::first-line{
+
   letter-spacing: 0.01em;
 }
 
-/* Page 4 explainer — placeholder state (matches other placeholders) */
+/* Placeholder styling */
 body[data-page="4"] .panel.page4-explain .explain.placeholder{
   color: var(--muted);
   font-style: italic;
 }
 
-/* Page 4 explainer: prevent overlap on smaller viewports */
+/* Responsive: stop the pull-up on narrow layouts */
 @media (max-width: 980px){
-  body[data-page="4"] .page4-explain-wrap{
-    margin-top: 10px;     /* stop pulling upward */
-    padding-top: 0;
+  body[data-page="4"] .main.page4-grid{
+    padding-bottom: 8px;   /* remove reserved space */
   }
+
+
 
   body[data-page="4"] .panel.page4-explain{
-    max-width: 100%;      /* let it breathe on narrow screens */
+    max-width: 100%;
   }
 }
 
-/* Even tighter phones / small tablets */
-@media (max-width: 640px){
-  body[data-page="4"] .page4-explain-wrap{
-    margin-top: 12px;
+/* Short-height screens: also disable pull-up to prevent overlap */
+@media (max-height: 760px){
+  body[data-page="4"] .main.page4-grid{
+    padding-bottom: 8px;
   }
 
-  body[data-page="4"] .panel.page4-explain .explain{
-    padding: 12px 14px;
-  }
 }
+
 
 /* Page 5: challenge box inside workspace */
 body[data-page="5"] .page5-challenge{
@@ -1169,7 +1166,32 @@ body[data-page="4"] .panel.page4-explain .explain.placeholder{
   font-style: italic !important;
   line-height: 1.35 !important;
 }
+
 /* =========================
+   GLOBAL: header description callout
+   ========================= */
+
+.top p{
+  margin-top: 10px;
+  padding: 12px 14px;
+
+  background: rgba(248, 246, 240, 0.95); /* warm neutral */
+  border: 1px solid rgba(11, 18, 32, 0.10);
+  border-left: 3px solid rgba(11, 18, 32, 0.25);
+  border-radius: 12px;
+
+  color: rgba(11, 18, 32, 0.82);
+  font-size: 0.95rem;
+  line-height: 1.45;
+
+  box-shadow: 0 6px 18px rgba(11, 18, 32, 0.06);
+}
+
+
+body:is([data-page="4"]) .top p{ 
+  max-width: 90ch;
+
+  /* =========================
    PAGE 4: prevent explainer overlap on small viewports
    ========================= */
 
