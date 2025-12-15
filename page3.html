@@ -211,6 +211,8 @@
 
     const runBtn = document.getElementById("runBtn");
 
+    const PREVIEW_PROMPT = "# Drag a primitive + (if needed) a function";
+
     // ---- Terminal typing animation (NEW) ----
     let typingLock = false;
     let pendingPreview = null;
@@ -399,44 +401,21 @@
     function renderPreviewOnly(){
       clearWorkspaceStatus();
 
-      // Not ready → static text, NO typing
-      if (!selectedPrimitive){
+      // Only type when fully runnable
+      if (!isRunnable()){
         previewTypedForState = false;
         lastReadySignature = "";
-        previewEl.textContent = "# Drag a primitive + (if needed) a function";
+        previewEl.textContent = PREVIEW_PROMPT;   // <- do not change preview at all
+        resultEl.textContent = "Output:\n—";
         updateRunButton();
         return;
       }
 
+      // Runnable: type the full code (including nums) once per completed selection
       const prim = PRIMITIVES[selectedPrimitive];
       const numsTxt = numsText();
-
-      if (prim.needsFunction && !selectedFunction){
-        previewTypedForState = false;
-        lastReadySignature = "";
-        previewEl.textContent =
-          `nums = ${numsTxt}\n# Add a ${prim.accepts} to complete this call`;
-        setWorkspaceStatus("warn", `Tip: ${prim.label} needs a ${prim.accepts}.`);
-        updateRunButton();
-        return;
-      }
-
-      if (prim.needsFunction && selectedFunction){
-        const fn = FUNCTIONS[selectedFunction];
-        if (!fn || fn.kind !== prim.accepts){
-          previewTypedForState = false;
-          lastReadySignature = "";
-          previewEl.textContent =
-            `nums = ${numsTxt}\n# That function doesn't fit here`;
-          setWorkspaceStatus("warn", invalidHint(prim.label));
-          updateRunButton();
-          return;
-        }
-      }
-
-      // READY — type ONCE per completed configuration
       const fnLabel = selectedFunction ? FUNCTIONS[selectedFunction].label : null;
-      const code = prim.preview(fnLabel, numsTxt);
+      const code = prim.preview(fnLabel, numsTxt); // this should include nums line
       const sig = readySignature();
 
       if (!previewTypedForState || sig !== lastReadySignature){
@@ -452,7 +431,8 @@
       updateRunButton();
     }
 
-    async function runAndTypeOutput(){
+
+   async function runAndTypeOutput(){
       if (!isRunnable() || typingLock) return;
 
       // Freeze the preview without a cursor once Run is pressed

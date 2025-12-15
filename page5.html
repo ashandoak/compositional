@@ -139,6 +139,8 @@
     const chPrevBtn = document.getElementById("chPrev");
     const chNextBtn = document.getElementById("chNext");
 
+    const PREVIEW_PROMPT = "# Complete the steps above, then press Run";
+    previewEl.textContent = PREVIEW_PROMPT;
 
     // --- Functions (only those needed across challenges; still “guided”) ---
     const FUNCTIONS = {
@@ -382,7 +384,7 @@
       // terminal initial prompt
       clearStatus();
       resultEl.textContent = "Output:\n—";
-      setTypingContent(previewEl, "# Complete the steps above, then press Run");
+      previewEl.textContent = "# Complete the steps above, then press Run";
       updateRunButton();
     }
 
@@ -472,36 +474,20 @@
 
     function renderPreview(){
       const ch = CHALLENGES[challengeIndex];
-      const numsTxt = numsText(ch.nums);
 
-      const allFilled = filled.every(x => x !== null);
-
-      // Not complete → static text, NO typing
-      if (!allFilled){
-        previewTypedForState = false;
-        lastReadySignature = "";
-        const missing = filled.findIndex(x => x === null);
-        previewEl.textContent =
-          `nums = ${numsTxt}\n# Fill Step ${missing + 1} to continue…`;
-        setStatus("warn", `Complete Step ${missing + 1}.`);
-        updateRunButton();
-        return;
-      }
-
-      // Complete but incorrect → static text
+      // Only type when the whole pipeline is correct
       if (!isRunnable()){
         previewTypedForState = false;
         lastReadySignature = "";
-        previewEl.textContent =
-          `nums = ${numsTxt}\n# One or more steps are incorrect`;
-        setStatus("warn", "Check the challenge requirements.");
+        previewEl.textContent = PREVIEW_PROMPT;  // <- do not change preview at all
+        resultEl.textContent = "Output:\n—";
         updateRunButton();
         return;
       }
 
-      // READY — type ONCE per completed configuration
+      // Runnable: type full program (including nums) once per completed config
       clearStatus();
-      const code = ch.preview(numsTxt);
+      const code = ch.preview(numsText(ch.nums));  // should include nums line
       const sig = readySignature();
 
       if (!previewTypedForState || sig !== lastReadySignature){
@@ -516,6 +502,7 @@
       workspaceEl.classList.add("good");
       updateRunButton();
     }
+
  
 
     function readySignature(){
