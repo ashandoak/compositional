@@ -666,10 +666,10 @@ body[data-page="2"] .panel.page2-bubbles .callout{
 }
 
 /* =========================
-   PAGE 3: MATCH PAGE 1/2 HERO LAYOUT + RIGHT TOOLBOX
+   PAGE 3 + PAGE 5: IDENTICAL LAYOUT + TOOLBOX + WORKSPACE + TERMINAL
    ========================= */
 
-body[data-page="3"] .main.page3-grid{
+body:is([data-page="3"], [data-page="5"]) .main.page3-grid{
   display: grid;
   grid-template-columns: 1fr minmax(560px, 760px) 360px;
   grid-template-areas: "spacer hero bank";
@@ -679,184 +679,97 @@ body[data-page="3"] .main.page3-grid{
   min-height: 520px;
 }
 
-body[data-page="3"] .page3-spacer{ grid-area: spacer; min-height: 1px; }
-body[data-page="3"] .panel.page3-hero{ grid-area: hero; }
-body[data-page="3"] .panel.page3-bank{ grid-area: bank; }
+/* grid areas */
+body:is([data-page="3"], [data-page="5"]) .page3-spacer{
+  grid-area: spacer;
+  min-height: 1px;
+}
+body:is([data-page="3"], [data-page="5"]) .panel.page3-hero{ grid-area: hero; }
+body:is([data-page="3"], [data-page="5"]) .panel.page3-bank{ grid-area: bank; }
 
 /* Hero panel styling like Page 1/2 */
-body[data-page="3"] .panel.page3-hero{
+body:is([data-page="3"], [data-page="5"]) .panel.page3-hero{
   box-shadow: 0 22px 70px rgba(11,18,32,0.14);
   border-color: rgba(75,123,255,0.26);
+  overflow: hidden; /* keeps rounded corners clean */
 }
 
-/* Remove workspace header + “tag-like” chrome */
-body[data-page="3"] .panel.page3-hero .panel-header{
+/* Remove hero header chrome */
+body:is([data-page="3"], [data-page="5"]) .panel.page3-hero .panel-header{
   display: none;
 }
 
-/* Toolbox should feel like Page 1 code-cards area */
-body[data-page="3"] .panel.page3-bank{
+/* IMPORTANT: hero body should not clip workspace interactions */
+body:is([data-page="3"], [data-page="5"]) .panel.page3-hero .panel-body{
+  overflow: visible;
+}
+
+/* Toolbox: detached “cards column” like Page 1 */
+body:is([data-page="3"], [data-page="5"]) .panel.page3-bank{
   background: transparent;
   border: none;
   box-shadow: none;
   opacity: 0.92;
 }
-
-body[data-page="3"] .panel.page3-bank .panel-header{
+body:is([data-page="3"], [data-page="5"]) .panel.page3-bank .panel-header{
   display: none;
 }
-
-body[data-page="3"] .panel.page3-bank .panel-body{
+body:is([data-page="3"], [data-page="5"]) .panel.page3-bank .panel-body{
   padding: 6px 0 0;
-}
-
-/* Ensure the workspace surface is generous like Page 1 dropzone */
-body[data-page="3"] .page3-workspace{
-  min-height: 420px;
-  padding: 14px;
-  border-radius: 14px;
-  background: rgba(255,255,255,0.22);
-}
-
-/* Reuse your existing group-title/subtle hooks (if not defined elsewhere) */
-.group-title{
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.25px;
-  text-transform: uppercase;
-  color: rgba(11,18,32,0.72);
-  margin: 0 0 6px 0;
-}
-
-.subtle{
-  color: rgba(11,18,32,0.55);
-  font-size: 13px;
-  margin: 0 0 10px 0;
-}
-
-/* Responsive: stack */
-@media (max-width: 980px){
-  body[data-page="3"] .main.page3-grid{
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "hero"
-      "bank";
-  }
-  body[data-page="3"] .page3-spacer{ display:none; }
-  body[data-page="3"] .panel.page3-bank{ opacity: 1; }
-  body[data-page="3"] .panel.page3-bank .panel-body{ padding-top: 10px; }
-}
-
-/* =========================
-   PAGE 3: WORKSPACE READABILITY + DRAGGABLES LIKE PAGE 1/2
-   ========================= */
-
-/* Remove the "Try ..." hint box completely on page 3 */
-body[data-page="3"] #rightHint{
-  display: none !important;
-}
-
-/* Ensure the right column doesn't clip / create weird backdrop behind draggables */
-body[data-page="3"] .panel.page3-bank,
-body[data-page="3"] .panel.page3-bank .panel-body{
   overflow: visible !important;
   background: transparent !important;
 }
 
-/* Make Page 3 draggables match the Page 1/2 "card" feel */
-body[data-page="3"] .panel.page3-bank .draggable{
+/* Hide the “Try ...” hint (if it exists) */
+body:is([data-page="3"], [data-page="5"]) #rightHint{
+  display: none !important;
+}
+
+/* Draggables: match detached card feel */
+body:is([data-page="3"], [data-page="5"]) .panel.page3-bank .draggable{
   background: rgba(255,255,255,0.92);
   color: var(--text);
   border-color: rgba(11,18,32,0.14);
   box-shadow: 0 10px 24px rgba(11,18,32,0.10);
 }
-
-body[data-page="3"] .panel.page3-bank .draggable:hover{
+body:is([data-page="3"], [data-page="5"]) .panel.page3-bank .draggable:hover{
   box-shadow: 0 14px 32px rgba(11,18,32,0.14);
 }
 
-/* Make the hero workspace surface clean (remove the heavy grey) */
-body[data-page="3"] .page3-workspace{
+/* Workspace surface: clean/light */
+body:is([data-page="3"], [data-page="5"]) .page3-workspace{
   background: transparent !important;
   border-color: transparent !important;
   padding: 8px !important;
+  min-height: 420px;
 }
 
-/* Slots should be light, readable surfaces (no dark grey boxes) */
-body[data-page="3"] .page3-workspace .slot{
-  background: rgba(255,255,255,0.92) !important;
-  border-color: rgba(11,18,32,0.14) !important;
-  box-shadow: 0 10px 24px rgba(11,18,32,0.08);
-}
-
-/* Slot labels stay subtle and readable */
-body[data-page="3"] .page3-workspace .slot-label{
-  color: rgba(11,18,32,0.55) !important;
-}
-
-/* Placeholder text should not be washed out */
-body[data-page="3"] .page3-workspace .placeholder{
-  color: rgba(11,18,32,0.45) !important;
-}
-
-/* Preview should also be light (no grey dark-mode feel) */
-body[data-page="3"] .page3-workspace .code-preview{
-  background: rgba(255,255,255,0.92) !important;
-  border-color: rgba(11,18,32,0.14) !important;
-  color: var(--text) !important;
-}
-
-/* Result and hint surfaces should be light and readable too */
-body[data-page="3"] .page3-workspace .result,
-body[data-page="3"] .page3-workspace .hint{
-  background: rgba(255,255,255,0.92) !important;
-  border-color: rgba(11,18,32,0.14) !important;
-  color: var(--text) !important;
-  box-shadow: 0 10px 24px rgba(11,18,32,0.08);
-}
-
-/* Subheadings inside the Functions area */
-.bank-subhead{
-  margin-top: 6px;
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.25px;
-  text-transform: uppercase;
-  color: rgba(11,18,32,0.72);
-}
-
-/* If any global .callout/.hint styles are forcing darker backgrounds, neutralize for Page 3 bank */
-body[data-page="3"] .panel.page3-bank .hint{
-  background: transparent !important;
-  border: none !important;
-  padding: 0 !important;
-}
-
-/* =========================
-   PAGE 3: LOCKED SLOTS + TERMINAL OUTPUT
-   ========================= */
-
-/* Placeholder tone (match Page 1 "drop code lines..." vibe) */
-body[data-page="3"] .page3-workspace .placeholder{
-  color: rgba(11,18,32,0.42) !important;
-}
-
-/* Ensure any text placed into slot bodies is high-contrast */
-body[data-page="3"] .page3-workspace .slot-body,
-body[data-page="3"] .page3-workspace .slot-body *{
-  color: var(--text) !important;
-}
-
-/* Default slot surface */
-body[data-page="3"] .page3-workspace .slot{
+/* Slots: light readable surfaces */
+body:is([data-page="3"], [data-page="5"]) .page3-workspace .slot{
   background: rgba(255,255,255,0.86) !important;
   border-color: rgba(11,18,32,0.14) !important;
   box-shadow: 0 10px 24px rgba(11,18,32,0.08);
   transition: background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
-/* Locked state: brighter + subtle accent ring */
-body[data-page="3"] .page3-workspace .slot.locked{
+body:is([data-page="3"], [data-page="5"]) .page3-workspace .slot-label{
+  color: rgba(11,18,32,0.55) !important;
+}
+
+/* Placeholder: italic grey like other placeholders */
+body:is([data-page="3"], [data-page="5"]) .page3-workspace .placeholder{
+  color: rgba(11,18,32,0.40) !important;
+  font-style: italic;
+}
+
+/* Slot contents: always dark/high contrast */
+body:is([data-page="3"], [data-page="5"]) .page3-workspace .slot-body,
+body:is([data-page="3"], [data-page="5"]) .page3-workspace .slot-body *{
+  color: var(--text) !important;
+}
+
+/* Locked slots: brighter surface + subtle accent ring */
+body:is([data-page="3"], [data-page="5"]) .page3-workspace .slot.locked{
   background: rgba(255,255,255,0.96) !important;
   border-color: rgba(75,123,255,0.28) !important;
   box-shadow:
@@ -864,15 +777,8 @@ body[data-page="3"] .page3-workspace .slot.locked{
     0 0 0 3px rgba(75,123,255,0.10) inset;
 }
 
-/* Make the "locked" tag (if present) visually distinct */
-body[data-page="3"] .page3-workspace .tag.locked{
-  background: rgba(75,123,255,0.16) !important;
-  border-color: rgba(75,123,255,0.30) !important;
-  color: var(--text) !important;
-}
-
-/* TERMINAL / CLI LOOKING OUTPUT AREA */
-body[data-page="3"] .terminal{
+/* Terminal/CLI look */
+body:is([data-page="3"], [data-page="5"]) .terminal{
   border: 1px solid rgba(11,18,32,0.14);
   border-radius: 14px;
   background: rgba(12,18,30,0.92);
@@ -882,7 +788,7 @@ body[data-page="3"] .terminal{
   color: rgba(233,238,251,0.92);
 }
 
-body[data-page="3"] .terminal .term-title{
+body:is([data-page="3"], [data-page="5"]) .terminal .term-title{
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -890,7 +796,7 @@ body[data-page="3"] .terminal .term-title{
   margin-bottom: 10px;
 }
 
-body[data-page="3"] .terminal .term-title .label{
+body:is([data-page="3"], [data-page="5"]) .terminal .term-title .label{
   font-weight: 700;
   font-size: 12px;
   letter-spacing: 0.25px;
@@ -898,280 +804,30 @@ body[data-page="3"] .terminal .term-title .label{
   color: rgba(233,238,251,0.72);
 }
 
-body[data-page="3"] .terminal pre{
+body:is([data-page="3"], [data-page="5"]) .terminal pre{
   margin: 0;
   white-space: pre-wrap;
   line-height: 1.55;
   font-size: 13px;
 }
 
-body[data-page="3"] .terminal .term-sep{
+body:is([data-page="3"], [data-page="5"]) .terminal .term-sep{
   height: 1px;
   background: rgba(233,238,251,0.10);
   margin: 10px 0;
 }
 
-body[data-page="3"] .terminal .muted{
+body:is([data-page="3"], [data-page="5"]) .terminal .muted{
   color: rgba(233,238,251,0.62);
 }
 
-/* Page 3: terminal sits as a panel "footer" (outside panel-body) */
-body[data-page="3"] .panel.page3-hero{
-  overflow: hidden; /* keeps rounded corners clean */
-}
-
-body[data-page="3"] .panel.page3-hero .panel-body{
-  overflow: visible; /* prevent clipping interactions */
-}
-
-body[data-page="3"] .panel.page3-hero .page3-terminal{
-  margin: 0 12px 12px; /* align with panel body padding rhythm */
-}
-/* =========================
-   PAGE 3: HERO STACK WRAPPER
-   (panel + terminal, terminal is OUTSIDE panel)
-   ========================= */
-
-body[data-page="3"] .page3-hero-stack{
-  grid-area: hero;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  min-height: 0;
-}
-
-/* IMPORTANT: the hero panel no longer owns the grid-area */
-body[data-page="3"] .panel.page3-hero{
-  /* keep your hero styling */
-  box-shadow: 0 22px 70px rgba(11,18,32,0.14);
-  border-color: rgba(75,123,255,0.26);
-}
-
-/* Interactive area remains clean */
-body[data-page="3"] .panel.page3-hero .panel-body{
-  overflow: visible;
-}
-
-/* Terminal is a separate block (still same column width) */
-body[data-page="3"] .page3-terminal{
-  width: 95%;
-  margin: 0;
-}
-
-/* (Optional) give terminal the same outer rhythm as panels */
-body[data-page="3"] .page3-terminal{
-  border-radius: 16px;
-}
-/* Page 3: placeholder should be lighter grey (like Page 1) */
-body[data-page="3"] .page3-workspace .slot-body .placeholder{
-  color: rgba(11,18,32,0.42) !important;
-  font-style: italic;
-}
-
-/* Page 3: terminal is a real footer (outside panel-body) */
-body[data-page="3"] .panel.page3-hero{
-  overflow: hidden; /* keeps rounded corners clean */
-}
-
-body[data-page="3"] .panel.page3-hero .panel-body{
-  overflow: visible;
-}
-
-body[data-page="3"] .panel.page3-hero .panel-footer{
+/* Terminal as footer rhythm inside hero panel */
+body:is([data-page="3"], [data-page="5"]) .panel.page3-hero .panel-footer{
   padding: 0 12px 12px;
 }
 
-/* Page 3: lighter placeholder in droppable areas */
-body[data-page="3"] .page3-workspace .placeholder{
-  color: rgba(11,18,32,0.40) !important;
-  font-style: italic;
-}
-
-/* Page 3: when filled, text should stay dark and readable */
-body[data-page="3"] .page3-workspace .slot-body,
-body[data-page="3"] .page3-workspace .slot-body *{
-  color: var(--text) !important;
-}
-
-/* Page 4 — layout only (match Page 2 feel; code side-by-side; explanation below) */
-body[data-page="4"] .main.page4-grid{
-  display: grid;
-  grid-template-columns: 1fr minmax(720px, 980px) 1fr;
-  gap: 16px;
-  align-items: start;
-  padding: 18px 16px 8px;
-}
-
-body[data-page="4"] .page4-spacer{
-  min-height: 1px;
-}
-
-body[data-page="4"] .page4-hero{
-  width: 100%;
-}
-
-body[data-page="4"] .page4-codegrid{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  align-items: start;
-}
-
-/* keeps each code column self-contained */
-body[data-page="4"] .page4-codecol{
-  min-width: 0;
-}
-
-body[data-page="4"] .page4-subhead{
-  font-weight: 700;
-  margin: 2px 0 10px;
-  letter-spacing: 0.02em;
-}
-
-/* explanation panel centered under the hero */
-body[data-page="4"] .page4-explain-wrap{
-  display: grid;
-  grid-template-columns: 1fr minmax(720px, 980px) 1fr;
-  padding: 0 16px 10px;
-}
-
-body[data-page="4"] .page4-explain{
-  grid-column: 2;
-}
-
-body[data-page="4"] .page4-footer-row{
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-/* intermediates hidden until toggled */
-body[data-page="4"] #midLeft,
-body[data-page="4"] #midRight{
-  display: none;
-}
-
-
-/* =========================
-   PAGE 5: MATCH PAGE 3 (LAYOUT + TOOLBOX + TERMINAL)
-   ========================= */
-
-/* Layout grid identical to Page 3 */
-body[data-page="5"] .main.page3-grid{
-  display: grid;
-  grid-template-columns: 1fr minmax(560px, 760px) 360px;
-  grid-template-areas: "spacer hero bank";
-  gap: 14px;
-  align-items: start;
-  align-content: start;
-  min-height: 520px;
-}
-
-body[data-page="5"] .page3-spacer{ grid-area: spacer; min-height: 1px; }
-body[data-page="5"] .panel.page3-hero{ grid-area: hero; }
-body[data-page="5"] .panel.page3-bank{ grid-area: bank; }
-
-/* Hero + bank styling identical to Page 3 */
-body[data-page="5"] .panel.page3-hero{
-  box-shadow: 0 22px 70px rgba(11,18,32,0.14);
-  border-color: rgba(75,123,255,0.26);
-}
-body[data-page="5"] .panel.page3-hero .panel-header{ display: none; }
-
-body[data-page="5"] .panel.page3-bank{
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  opacity: 0.92;
-}
-body[data-page="5"] .panel.page3-bank .panel-header{ display: none; }
-body[data-page="5"] .panel.page3-bank .panel-body{ padding: 6px 0 0; }
-
-/* Workspace readability + “card” draggables identical to Page 3 */
-body[data-page="5"] #rightHint{ display: none !important; }
-
-body[data-page="5"] .panel.page3-bank,
-body[data-page="5"] .panel.page3-bank .panel-body{
-  overflow: visible !important;
-  background: transparent !important;
-}
-
-body[data-page="5"] .panel.page3-bank .draggable{
-  background: rgba(255,255,255,0.92);
-  color: var(--text);
-  border-color: rgba(11,18,32,0.14);
-  box-shadow: 0 10px 24px rgba(11,18,32,0.10);
-}
-body[data-page="5"] .panel.page3-bank .draggable:hover{
-  box-shadow: 0 14px 32px rgba(11,18,32,0.14);
-}
-
-/* Page 3 workspace surface + slots */
-body[data-page="5"] .page3-workspace{
-  background: transparent !important;
-  border-color: transparent !important;
-  padding: 8px !important;
-  min-height: 420px;
-}
-
-body[data-page="5"] .page3-workspace .slot{
-  background: rgba(255,255,255,0.92) !important;
-  border-color: rgba(11,18,32,0.14) !important;
-  box-shadow: 0 10px 24px rgba(11,18,32,0.08);
-}
-
-body[data-page="5"] .page3-workspace .slot-label{
-  color: rgba(11,18,32,0.55) !important;
-}
-
-body[data-page="5"] .page3-workspace .placeholder{
-  color: rgba(11,18,32,0.42) !important;
-}
-
-/* Locked slot state identical to Page 3 */
-body[data-page="5"] .page3-workspace .slot.locked{
-  background: rgba(255,255,255,0.96) !important;
-  border-color: rgba(75,123,255,0.28) !important;
-  box-shadow:
-    0 14px 34px rgba(11,18,32,0.10),
-    0 0 0 3px rgba(75,123,255,0.10) inset;
-}
-
-/* Terminal look identical to Page 3 */
-body[data-page="5"] .terminal{
-  border: 1px solid rgba(11,18,32,0.14);
-  border-radius: 14px;
-  background: rgba(12,18,30,0.92);
-  box-shadow: 0 14px 40px rgba(11,18,32,0.12);
-  padding: 12px;
-  font-family: var(--mono);
-  color: rgba(233,238,251,0.92);
-}
-
-body[data-page="5"] .terminal .term-title{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-/* Responsive stacking identical to Page 3 */
-@media (max-width: 980px){
-  body[data-page="5"] .main.page3-grid{
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "hero"
-      "bank";
-  }
-  body[data-page="5"] .page3-spacer{ display:none; }
-  body[data-page="5"] .panel.page3-bank{ opacity: 1; }
-  body[data-page="5"] .panel.page3-bank .panel-body{ padding-top: 10px; }
-}
-
-/* Page 3 terminal: Run button */
-body[data-page="3"] .term-run{
+/* Run button (shared for Page 3 + Page 5) */
+body:is([data-page="3"], [data-page="5"]) .term-run{
   appearance: none;
   border: 1px solid rgba(233,238,251,0.22);
   background: rgba(233,238,251,0.10);
@@ -1184,33 +840,33 @@ body[data-page="3"] .term-run{
   transition: transform .06s ease, background .12s ease, border-color .12s ease, opacity .12s ease;
 }
 
-body[data-page="3"] .term-run.is-enabled{
+body:is([data-page="3"], [data-page="5"]) .term-run.is-enabled{
   background: rgba(75,123,255,0.22);
   border-color: rgba(75,123,255,0.38);
 }
 
-body[data-page="3"] .term-run:active{
+body:is([data-page="3"], [data-page="5"]) .term-run:active{
   transform: translateY(1px);
 }
 
-body[data-page="3"] .term-run:disabled{
+body:is([data-page="3"], [data-page="5"]) .term-run:disabled{
   opacity: 0.45;
   cursor: not-allowed;
 }
 
-/* Blinking cursor inside terminal typing areas */
-body[data-page="3"] .term-typing{
+/* Typing cursor (shared) */
+body:is([data-page="3"], [data-page="5"]) .term-typing{
   position: relative;
 }
 
-body[data-page="3"] .term-cursor{
+body:is([data-page="3"], [data-page="5"]) .term-cursor{
   display: inline-block;
   width: 8px;
   margin-left: 2px;
   transform: translateY(1px);
 }
 
-body[data-page="3"] .term-cursor::before{
+body:is([data-page="3"], [data-page="5"]) .term-cursor::before{
   content: "▍";
   opacity: 0.9;
   animation: termBlink 1s steps(2, end) infinite;
@@ -1220,6 +876,29 @@ body[data-page="3"] .term-cursor::before{
   0%, 49% { opacity: 0.9; }
   50%, 100% { opacity: 0.0; }
 }
+
+/* Responsive: stack hero above bank (shared) */
+@media (max-width: 980px){
+  body:is([data-page="3"], [data-page="5"]) .main.page3-grid{
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "hero"
+      "bank";
+  }
+
+  body:is([data-page="3"], [data-page="5"]) .page3-spacer{
+    display: none;
+  }
+
+  body:is([data-page="3"], [data-page="5"]) .panel.page3-bank{
+    opacity: 1;
+  }
+
+  body:is([data-page="3"], [data-page="5"]) .panel.page3-bank .panel-body{
+    padding-top: 10px;
+  }
+}
+
 /* =========================
    PAGE 4: EXPLAINER — MATCH PAGE 2 EXACTLY
    ========================= */

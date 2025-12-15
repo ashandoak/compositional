@@ -12,7 +12,8 @@
     <div class="top">
       <h1>Now you try it</h1>
       <p>
-        Use functional primitives to build a solution that meets the goal. Drag an array, a primitive, and (if needed) a function into the workspace.
+        Use functional primitives to build a solution that meets the goal. Drag a primitive + (if needed) a function.
+.
       </p>
     </div>
 
@@ -30,14 +31,15 @@
         <!-- PANEL BODY: interactive area ONLY -->
         <div class="panel-body">
           <div class="workspace page3-workspace" id="workspace" aria-label="Workspace surface">
-            <div class="ws-row">
-              <div class="slot" id="slotArray">
-                <div class="slot-label">Array</div>
-                <div class="slot-body">
-                  <span class="placeholder">Drop an array here</span>
-                </div>
+           <div class="ws-row">
+            <div class="slot locked page3-static" id="staticNums">
+              <div class="slot-label">Input</div>
+              <div class="slot-body">
+                <span>nums = [1, 2, 3, 4, 5, 6]</span>
               </div>
             </div>
+          </div>
+ 
 
             <div class="ws-row">
               <div class="slot" id="slotPrimitive">
@@ -62,12 +64,12 @@
           <div class="terminal" aria-label="Python preview and output">
             <div class="term-title">
               <div class="label">Python (preview & output)</div>
-              <div class="muted">simulated</div>
+              <button id="runBtn" class="term-run" disabled aria-disabled="true">Run</button>
             </div>
 
-            <pre id="preview"># Drag an array + a primitive + (if needed) a function</pre>
+            <pre id="preview" class="term-typing" aria-live="polite">"# Drag a primitive + (if needed) a function"</pre>
             <div class="term-sep"></div>
-            <pre id="result" class="muted">Output:
+            <pre id="result" class="muted term-typing">Output:
 —</pre>
             <pre id="hint" class="muted" style="margin-top:10px; display:none;"></pre>
           </div>
@@ -82,19 +84,6 @@
         </div>
 
         <div class="panel-body">
-          <div class="group-title">Arrays</div>
-
-          <div class="draggable" draggable="true" data-type="array" data-id="a1">
-            <span>nums = [1, 2, 3, 4, 5, 6]</span>
-          </div>
-          <div class="draggable" draggable="true" data-type="array" data-id="a2">
-            <span>nums = [0, 1, 2, 3, 4]</span>
-          </div>
-          <div class="draggable" draggable="true" data-type="array" data-id="a3">
-            <span>nums = [-3, -2, -1, 0, 1, 2]</span>
-          </div>
-
-          <div style="height:14px;"></div>
 
           <div class="group-title">Primitives</div>
 
@@ -160,22 +149,417 @@
   </div>
 
   <script src="assets/nav.js"></script>
+<script>
+    // ---- Data model ----
+    const NUMS = [1,2,3,4,5,6];
 
-  <!-- Page 5 behavior will be wired next. For now, a tiny stub so layout is testable. -->
-  <script>
-    // Keep navigation consistent with Page 3's buttons
-    // (nav.js may already do this; this is harmless if duplicated.)
-    const prev = document.body.dataset.prev;
-    const next = document.body.dataset.next;
+    const FUNCTIONS = {
+      // predicates
+      is_even: { kind: "predicate", label: "is_even", apply: (x) => x % 2 === 0 },
+      is_positive: { kind: "predicate", label: "is_positive", apply: (x) => x > 0 },
+      greater_than_2: { kind: "predicate", label: "greater_than_2", apply: (x) => x > 2 },
+      // transforms
+      square: { kind: "transform", label: "square", apply: (x) => x * x },
+      double: { kind: "transform", label: "double", apply: (x) => x * 2 },
+      negate: { kind: "transform", label: "negate", apply: (x) => -x }
+    };
 
-    const backBtn = document.getElementById("backBtn");
-    const nextBtn = document.getElementById("nextBtn");
+    const PRIMITIVES = {
+      filter: {
+        label: "filter",
+        needsFunction: true,
+        accepts: "predicate",
+        preview: (fnLabel, numsText) => `nums = ${numsText}\nresult = list(filter(${fnLabel}, nums))\nprint(result)`,
+        explain: "filter keeps values that satisfy the predicate (True/False test).",
+        eval: (arr, fn) => arr.filter(fn.apply)
+      },
+      map: {
+        label: "map",
+        needsFunction: true,
+        accepts: "transform",
+        preview: (fnLabel, numsText) => `nums = ${numsText}\nresult = list(map(${fnLabel}, nums))\nprint(result)`,
+        explain: "map transforms every value independently.",
+        eval: (arr, fn) => arr.map(fn.apply)
+      },
+      sum: {
+        label: "sum",
+        needsFunction: false,
+        accepts: null,
+        preview: (_fnLabel, numsText) => `nums = ${numsText}\nresult = sum(nums)\nprint(result)`,
+        explain: "sum combines all numeric values into a single result.",
+        eval: (arr) => arr.reduce((a,b) => a + b, 0)
+      }
+    };
 
-    if (backBtn) backBtn.addEventListener("click", () => { if (prev) location.href = prev; });
-    if (nextBtn) nextBtn.addEventListener("click", () => { if (next) location.href = next; });
+    // ---- UI state ----
+    let selectedPrimitive = null;
+    let selectedFunction = null;
 
-    // Reset is a no-op stub for now (behavior comes later)
-    document.getElementById("resetBtn").addEventListener("click", () => {});
+    // ---- DOM ----
+    const toastEl = document.getElementById("toast");
+    const workspaceEl = document.getElementById("workspace");
+
+    const slotPrimitiveEl = document.getElementById("slotPrimitive");
+    const slotFunctionEl = document.getElementById("slotFunction");
+
+    const previewEl = document.getElementById("preview");
+    const resultEl = document.getElementById("result");
+    const hintEl = document.getElementById("hint");
+    const rightHintEl = document.getElementById("rightHint");
+
+    const runBtn = document.getElementById("runBtn");
+
+    // ---- Terminal typing animation (NEW) ----
+    let typingLock = false;
+    let pendingPreview = null;
+    let lastPreviewText = "";
+    let lastRunnable = false;
+
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, (c)=>({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#039;"
+      }[c]));
+    }
+
+    function showToast(msg){
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      window.clearTimeout(showToast._t);
+      showToast._t = window.setTimeout(()=>toastEl.classList.remove("show"), 2000);
+    }
+
+    function numsText(){
+      return `[${NUMS.join(", ")}]`;
+    }
+
+    function clearWorkspaceStatus(){
+      workspaceEl.classList.remove("good","warn","bad");
+      hintEl.style.display = "none";
+      hintEl.textContent = "";
+    }
+
+    function setWorkspaceStatus(kind, msg){
+      workspaceEl.classList.remove("good","warn","bad");
+      workspaceEl.classList.add(kind);
+      hintEl.style.display = "block";
+      hintEl.textContent = msg;
+    }
+
+    function invalidHint(primLabel){
+      if (primLabel === "filter") return "filter needs a function that returns True/False (a predicate).";
+      if (primLabel === "map") return "map needs a function that returns a value (a transform).";
+      return "That function doesn't fit this primitive.";
+    }
+
+    function formatOut(out){
+      if (Array.isArray(out)) return `[${out.join(", ")}]`;
+      return String(out);
+    }
+
+    function displayPrimitiveText(pid){
+      if (pid === "filter") return "filter( predicate, data )";
+      if (pid === "map") return "map( transform, data )";
+      if (pid === "sum") return "sum( data )";
+      return pid;
+    }
+
+    function displayFnText(fid){
+      const f = FUNCTIONS[fid];
+      return f ? `${f.label}(x)` : fid;
+    }
+
+    function setLocked(slotEl, isLocked){
+      slotEl.classList.toggle("locked", !!isLocked);
+    }
+
+    function isRunnable(){
+      if (!selectedPrimitive) return false;
+      const prim = PRIMITIVES[selectedPrimitive];
+      if (!prim) return false;
+      if (!prim.needsFunction) return true;
+      if (!selectedFunction) return false;
+      const fn = FUNCTIONS[selectedFunction];
+      return !!fn && fn.kind === prim.accepts;
+    }
+
+    function updateRunButton(){
+      const runnable = isRunnable();
+      runBtn.disabled = !runnable || typingLock;
+      runBtn.setAttribute("aria-disabled", String(runBtn.disabled));
+      runBtn.classList.toggle("is-enabled", runnable && !typingLock);
+
+      // Only show a “ready” toast when we transition to runnable
+      if (runnable && !lastRunnable){
+        showToast("Ready — press Run.");
+      }
+      lastRunnable = runnable;
+    }
+
+    function setTypingContent(el, text){
+      // Insert cursor span without breaking <pre> whitespace
+      el.innerHTML = `${escapeHtml(text)}<span class="term-cursor" aria-hidden="true"></span>`;
+    }
+
+    async function typeText(el, fullText, opts = {}){
+      const speed = typeof opts.speed === "number" ? opts.speed : 10; // ms per char
+      const startBlank = opts.startBlank ?? true;
+
+      typingLock = true;
+      updateRunButton();
+
+      const text = String(fullText ?? "");
+      let i = 0;
+
+      if (startBlank) {
+        setTypingContent(el, "");
+      } else {
+        // If not blank, we still retype from scratch for consistency
+        setTypingContent(el, "");
+      }
+
+      while (i < text.length){
+        // chunk typing for speed (avoid too-slow long blocks)
+        const step = Math.min(3, text.length - i);
+        i += step;
+        setTypingContent(el, text.slice(0, i));
+        await new Promise(r => setTimeout(r, speed));
+      }
+
+      typingLock = false;
+      updateRunButton();
+    }
+
+    function queuePreviewTyping(newText){
+      if (newText === lastPreviewText) return;
+      lastPreviewText = newText;
+
+      if (typingLock){
+        pendingPreview = newText;
+        return;
+      }
+
+      // Fire and forget; when done, flush any pending preview update
+      (async ()=>{
+        await typeText(previewEl, newText, { speed: 18, startBlank: true });
+        if (pendingPreview && pendingPreview !== newText){
+          const next = pendingPreview;
+          pendingPreview = null;
+          queuePreviewTyping(next);
+        } else {
+          pendingPreview = null;
+        }
+      })();
+    }
+
+    // ---- Rendering ----
+    function renderSlots(){
+      // Primitive slot
+      const primBody = slotPrimitiveEl.querySelector(".slot-body");
+      primBody.innerHTML = selectedPrimitive
+        ? `<span>${escapeHtml(displayPrimitiveText(selectedPrimitive))}</span>`
+        : `<span class="placeholder">Drop a primitive here</span>`;
+      setLocked(slotPrimitiveEl, !!selectedPrimitive);
+
+      // Function slot
+      const fnBody = slotFunctionEl.querySelector(".slot-body");
+      if (!selectedPrimitive){
+        fnBody.innerHTML = `<span class="placeholder">Drop a predicate/transform here (if needed)</span>`;
+        setLocked(slotFunctionEl, false);
+      } else {
+        const prim = PRIMITIVES[selectedPrimitive];
+        if (!prim.needsFunction){
+          fnBody.innerHTML = `<span class="placeholder">(not needed for sum)</span>`;
+          setLocked(slotFunctionEl, true);
+        } else if (selectedFunction){
+          fnBody.innerHTML = `<span>${escapeHtml(displayFnText(selectedFunction))}</span>`;
+          setLocked(slotFunctionEl, true);
+        } else {
+          fnBody.innerHTML = `<span class="placeholder">Drop a ${prim.accepts} here</span>`;
+          setLocked(slotFunctionEl, false);
+        }
+      }
+
+      renderPreviewOnly();
+      updateRunButton();
+    }
+
+    function renderPreviewOnly(){
+      clearWorkspaceStatus();
+
+      // Need primitive
+      if (!selectedPrimitive){
+        queuePreviewTyping("# Drag a primitive + (if needed) a function");
+        return;
+      }
+
+      const prim = PRIMITIVES[selectedPrimitive];
+      const numsTxt = numsText();
+
+      // Need compatible function if required
+      if (prim.needsFunction && !selectedFunction){
+        queuePreviewTyping(`nums = ${numsTxt}\n# Add a ${prim.accepts} to complete this call`);
+        setWorkspaceStatus("warn", `Tip: ${prim.label} needs a ${prim.accepts}.`);
+        return;
+      }
+
+      if (prim.needsFunction && selectedFunction){
+        const fn = FUNCTIONS[selectedFunction];
+        if (!fn || fn.kind !== prim.accepts){
+          queuePreviewTyping(`nums = ${numsTxt}\n# That function doesn't fit here`);
+          setWorkspaceStatus("warn", invalidHint(prim.label));
+          return;
+        }
+      }
+
+      const fnLabel = selectedFunction ? FUNCTIONS[selectedFunction].label : null;
+      queuePreviewTyping(prim.preview(fnLabel, numsTxt));
+
+      // Output stays unchanged until Run is pressed
+      resultEl.textContent = "Output:\n—";
+      workspaceEl.classList.add("good");
+    }
+
+    async function runAndTypeOutput(){
+      if (!isRunnable() || typingLock) return;
+
+      // Freeze the preview without a cursor once Run is pressed
+      setTypingContentNoCursor(previewEl, lastPreviewText || previewEl.textContent);
+
+      clearWorkspaceStatus();
+
+      const prim = PRIMITIVES[selectedPrimitive];
+      const arr = NUMS.slice();
+
+      let out;
+      try {
+        out = prim.needsFunction ? prim.eval(arr, FUNCTIONS[selectedFunction]) : prim.eval(arr);
+      } catch (e) {
+        setWorkspaceStatus("bad", "Something went wrong evaluating this pipeline.");
+        await typeText(resultEl, "Output:\n—", { speed: 14, startBlank: true });
+        return;
+      }
+
+      const outputText = `Output:\n${formatOut(out)}\n\n# ${prim.explain}`;
+      await typeText(resultEl, outputText, { speed: 14, startBlank: true });
+      workspaceEl.classList.add("good");
+    }
+
+    function resetAll(){
+      selectedPrimitive = null;
+      selectedFunction = null;
+
+      clearWorkspaceStatus();
+      resultEl.textContent = "Output:\n—";
+
+      renderSlots();
+      showToast("Reset.");
+    }
+
+    // ---- Drag & drop ----
+    function attachDraggables(){
+      document.querySelectorAll(".draggable").forEach(el=>{
+        el.addEventListener("dragstart", (e)=>{
+          el.classList.add("dragging");
+          const payload = {
+            type: el.dataset.type,
+            id: el.dataset.id,
+            kind: el.dataset.kind || null
+          };
+          e.dataTransfer.setData("text/plain", JSON.stringify(payload));
+          e.dataTransfer.effectAllowed = "move";
+        });
+        el.addEventListener("dragend", ()=>el.classList.remove("dragging"));
+      });
+    }
+
+    function allowDrop(el){
+      el.addEventListener("dragover", (e)=>{
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+      });
+    }
+
+    function handleDropOnSlot(slotKind){
+      return (e)=>{
+        e.preventDefault();
+        const raw = e.dataTransfer.getData("text/plain");
+        if (!raw) return;
+
+        let payload;
+        try { payload = JSON.parse(raw); } catch { return; }
+
+        if (slotKind === "primitive"){
+          if (payload.type !== "primitive"){
+            showToast("Drop a primitive here.");
+            return;
+          }
+          selectedPrimitive = payload.id;
+          selectedFunction = null; // avoid stale mismatch
+          renderSlots();
+          showToast("Primitive set.");
+          return;
+        }
+
+        if (slotKind === "function"){
+          if (payload.type !== "fn"){
+            showToast("Drop a function here.");
+            return;
+          }
+          if (!selectedPrimitive){
+            setWorkspaceStatus("warn", "Pick a primitive first.");
+            showToast("Choose a primitive first.");
+            return;
+          }
+
+          const prim = PRIMITIVES[selectedPrimitive];
+
+          if (!prim.needsFunction){
+            setWorkspaceStatus("warn", "sum doesn’t take a function.");
+            showToast("sum doesn’t take a function.");
+            return;
+          }
+
+          const fn = FUNCTIONS[payload.id];
+          if (!fn || fn.kind !== prim.accepts){
+            setWorkspaceStatus("warn", invalidHint(prim.label));
+            showToast("That function doesn’t fit.");
+            return;
+          }
+
+          selectedFunction = payload.id;
+          renderSlots();
+          showToast("Function set.");
+        }
+      };
+    }
+
+    // ---- Setup ----
+    document.getElementById("resetBtn").addEventListener("click", resetAll);
+    runBtn.addEventListener("click", runAndTypeOutput);
+
+    allowDrop(slotPrimitiveEl);
+    allowDrop(slotFunctionEl);
+
+    slotPrimitiveEl.addEventListener("drop", handleDropOnSlot("primitive"));
+    slotFunctionEl.addEventListener("drop", handleDropOnSlot("function"));
+
+    attachDraggables();
+
+    // Start with a typed prompt (so cursor is visible immediately)
+    setTypingContent(previewEl, "# Drag a primitive + (if needed) a function");
+    updateRunButton();
+
+    function setTypingContentNoCursor(el, text){
+      el.textContent = String(text ?? "");
+    }
+
+    // Don't show the "Try..." hint on page 3 (keep node to avoid nulls)
+    if (rightHintEl) rightHintEl.style.display = "none";
   </script>
+
 </body>
 </html>
