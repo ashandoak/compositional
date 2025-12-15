@@ -1055,3 +1055,13 @@ body[data-page="5"] .ch-nav:disabled{
 body[data-page="5"] .page3-workspace .ws-row + .ws-row{
   margin-top: 14px;
 }
+
+/* Page 3: space between droppable slots (match Page 5 rhythm) */
+body[data-page="3"] .page3-workspace .slot + .slot{
+  margin-top: 14px;
+}
+
+/* Page 3: space between workspace rows */
+body[data-page="3"] .page3-workspace .ws-row + .ws-row{
+  margin-top: 14px;
+}

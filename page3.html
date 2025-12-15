@@ -216,6 +216,9 @@
     let pendingPreview = null;
     let lastPreviewText = "";
     let lastRunnable = false;
+    let previewTypedForState = false;
+    let lastReadySignature = "";
+
 
     function escapeHtml(s){
       return String(s).replace(/[&<>"']/g, (c)=>({
@@ -286,6 +289,10 @@
       if (!selectedFunction) return false;
       const fn = FUNCTIONS[selectedFunction];
       return !!fn && fn.kind === prim.accepts;
+    }
+
+    function readySignature(){
+      return `${selectedPrimitive || ""}|${selectedFunction || ""}`;
     }
 
     function updateRunButton(){
@@ -392,37 +399,57 @@
     function renderPreviewOnly(){
       clearWorkspaceStatus();
 
-      // Need primitive
+      // Not ready → static text, NO typing
       if (!selectedPrimitive){
-        queuePreviewTyping("# Drag a primitive + (if needed) a function");
+        previewTypedForState = false;
+        lastReadySignature = "";
+        previewEl.textContent = "# Drag a primitive + (if needed) a function";
+        updateRunButton();
         return;
       }
 
       const prim = PRIMITIVES[selectedPrimitive];
       const numsTxt = numsText();
 
-      // Need compatible function if required
       if (prim.needsFunction && !selectedFunction){
-        queuePreviewTyping(`nums = ${numsTxt}\n# Add a ${prim.accepts} to complete this call`);
+        previewTypedForState = false;
+        lastReadySignature = "";
+        previewEl.textContent =
+          `nums = ${numsTxt}\n# Add a ${prim.accepts} to complete this call`;
         setWorkspaceStatus("warn", `Tip: ${prim.label} needs a ${prim.accepts}.`);
+        updateRunButton();
         return;
       }
 
       if (prim.needsFunction && selectedFunction){
         const fn = FUNCTIONS[selectedFunction];
         if (!fn || fn.kind !== prim.accepts){
-          queuePreviewTyping(`nums = ${numsTxt}\n# That function doesn't fit here`);
+          previewTypedForState = false;
+          lastReadySignature = "";
+          previewEl.textContent =
+            `nums = ${numsTxt}\n# That function doesn't fit here`;
           setWorkspaceStatus("warn", invalidHint(prim.label));
+          updateRunButton();
           return;
         }
       }
 
+      // READY — type ONCE per completed configuration
       const fnLabel = selectedFunction ? FUNCTIONS[selectedFunction].label : null;
-      queuePreviewTyping(prim.preview(fnLabel, numsTxt));
+      const code = prim.preview(fnLabel, numsTxt);
+      const sig = readySignature();
 
-      // Output stays unchanged until Run is pressed
+      if (!previewTypedForState || sig !== lastReadySignature){
+        previewTypedForState = true;
+        lastReadySignature = sig;
+        queuePreviewTyping(code);
+      } else {
+        previewEl.textContent = code;
+      }
+
       resultEl.textContent = "Output:\n—";
       workspaceEl.classList.add("good");
+      updateRunButton();
     }
 
     async function runAndTypeOutput(){
