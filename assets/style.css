@@ -1220,3 +1220,75 @@ body[data-page="3"] .term-cursor::before{
   0%, 49% { opacity: 0.9; }
   50%, 100% { opacity: 0.0; }
 }
+/* =========================
+   PAGE 4: EXPLAINER — MATCH PAGE 2 EXACTLY
+   ========================= */
+
+body[data-page="4"] .page4-explain-wrap{
+  margin-top: -400px;
+  padding-top: 0;
+  padding-bottom: 4px;
+}
+
+body[data-page="4"] .panel.page4-explain{
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  opacity: 0.95;
+  max-width: 620px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body[data-page="4"] .panel.page4-explain .panel-body{
+  padding: 0;
+}
+
+body[data-page="4"] .panel.page4-explain .explain{
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(11,18,32,0.14);
+  box-shadow: 0 10px 24px rgba(11,18,32,0.10);
+  padding: 14px 16px;
+  border-radius: 14px;
+
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+/* Title line like Page 2 */
+body[data-page="4"] .panel.page4-explain .explain::first-line{
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+}
+
+/* Page 4 explainer — placeholder state (matches other placeholders) */
+body[data-page="4"] .panel.page4-explain .explain.placeholder{
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* Page 4 explainer: prevent overlap on smaller viewports */
+@media (max-width: 980px){
+  body[data-page="4"] .page4-explain-wrap{
+    margin-top: 10px;     /* stop pulling upward */
+    padding-top: 0;
+  }
+
+  body[data-page="4"] .panel.page4-explain{
+    max-width: 100%;      /* let it breathe on narrow screens */
+  }
+}
+
+/* Even tighter phones / small tablets */
+@media (max-width: 640px){
+  body[data-page="4"] .page4-explain-wrap{
+    margin-top: 12px;
+  }
+
+  body[data-page="4"] .panel.page4-explain .explain{
+    padding: 12px 14px;
+  }
+}
+

@@ -26,16 +26,16 @@
             <!-- Left: imperative -->
             <div class="page4-codecol">
               <div class="page4-subhead">Loop-based (imperative)</div>
-              <div class="codebox" id="L_code">
-                <div class="line hl" data-map="setup"><span class="gutter">1</span><span class="content">nums = [1,2,3,4,5,6]</span></div>
-                <div class="line"><span class="gutter">2</span><span class="content"></span></div>
-                <div class="line hl" data-map="loop"><span class="gutter">3</span><span class="content">result = []</span></div>
-                <div class="line hl" data-map="loop"><span class="gutter">4</span><span class="content">for x in nums:</span></div>
-                <div class="line hl" data-map="predicate"><span class="gutter">5</span><span class="content">    if x % 2 == 0:</span></div>
-                <div class="line hl" data-map="transform"><span class="gutter">6</span><span class="content">        result.append(x * 10)</span></div>
-                <div class="line"><span class="gutter">7</span><span class="content"></span></div>
-                <div class="line hl" data-map="reduce"><span class="gutter">8</span><span class="content">print(sum(result))</span></div>
-              </div>
+             <div class="codebox" id="L_code">
+              <div class="line hl" data-map="setup"><span class="gutter">1</span><span class="content">nums = [1, 2, 3, 4, 5, 6]</span></div>
+              <div class="line hl" data-map="loop"><span class="gutter">2</span><span class="content">total = 0</span></div>
+              <div class="line hl" data-map="loop"><span class="gutter">3</span><span class="content">for x in nums:</span></div>
+              <div class="line hl" data-map="predicate"><span class="gutter">4</span><span class="content">    if x % 2 == 0:</span></div>
+              <div class="line hl" data-map="transform"><span class="gutter">5</span><span class="content">        y = x * x</span></div>
+              <div class="line hl" data-map="reduce"><span class="gutter">6</span><span class="content">        total += y</span></div>
+              <div class="line hl" data-map="reduce"><span class="gutter">7</span><span class="content">print(total)</span></div>
+            </div>
+
 
             </div>
 
@@ -43,15 +43,15 @@
             <div class="page4-codecol">
               <div class="page4-subhead">Compositional (functional)</div>
               <div class="codebox" id="R_code">
-                <div class="line hl" data-map="setup"><span class="gutter">1</span><span class="content">nums = [1,2,3,4,5,6]</span></div>
-                <div class="line"><span class="gutter">2</span><span class="content"></span></div>
-                <div class="line hl" data-map="predicate"><span class="gutter">3</span><span class="content">evens = filter(is_even, nums)</span></div>
-                <div class="line hl" data-map="transform"><span class="gutter">4</span><span class="content">tens = map(times_ten, evens)</span></div>
-                <div class="line hl" data-map="reduce"><span class="gutter">5</span><span class="content">print(sum(tens))</span></div>
-                <div class="line"><span class="gutter">6</span><span class="content"></span></div>
-                <div class="line hl" data-map="functions"><span class="gutter">7</span><span class="content">def is_even(x): return x % 2 == 0</span></div>
-                <div class="line hl" data-map="functions"><span class="gutter">8</span><span class="content">def times_ten(x): return x * 10</span></div>
+                <div class="line hl" data-map="setup"><span class="gutter">1</span><span class="content">nums = [1, 2, 3, 4, 5, 6]</span></div>
+                <div class="line hl" data-map="functions"><span class="gutter">2</span><span class="content">def is_even(x):</span></div>
+                <div class="line hl" data-map="functions"><span class="gutter">3</span><span class="content">    return x % 2 == 0</span></div>
+                <div class="line hl" data-map="functions"><span class="gutter">4</span><span class="content">def square(x):</span></div>
+                <div class="line hl" data-map="functions"><span class="gutter">5</span><span class="content">    return x * x</span></div>
+                <div class="line hl" data-map="reduce"><span class="gutter">6</span><span class="content">total = sum(map(square, filter(is_even, nums)))</span></div>
+                <div class="line hl" data-map="reduce"><span class="gutter">7</span><span class="content">print(total)</span></div>
               </div>
+
 
             </div>
           </div>
@@ -68,8 +68,8 @@
           <div class="page4-footer-row">
           </div>
 
-          <div class="explain" id="explain">
-            Click a highlighted line to see what it represents.
+          <div class="explain placeholder" id="explain">
+            Click a line above to see how the code compares          
           </div>
         </div>
       </div>
@@ -108,30 +108,210 @@
     if (is_even(x)) result.push(times_ten(x));
   }
 
-  const EXPL = {
-    setup: "Setup: we start from the same input list on both sides.",
-    loop: "Loop scaffolding: the imperative version mixes selection, transformation, and collection in one place.",
-    predicate: "Predicate: a boolean test that decides which items flow forward (here: evens).",
-    transform: "Transform: a function that changes each passing value (here: multiply by 10).",
-    reduce: "Reduce/aggregate: combine many values into one output (here: sum).",
-    functions: "Small named functions make the pipeline explicit and reusable."
-  };
+  const EXPL_BY_LINE = {
+  // === LINE 1: Setup ===
+  L1: {
+    title: "Same input, same goal",
+    body: "Both versions start with the same list of numbers (nums). The rest of the code is just two different ways to compute the same final total from that input."
+  },
+  R1: {
+    title: "Same input, same goal",
+    body: "Both versions start with the same list of numbers (nums). The rest of the code is just two different ways to compute the same final total from that input."
+  },
 
-  function clearActive(){
-    document.querySelectorAll(".hl.active").forEach(el => el.classList.remove("active"));
+  // === L2 ↔ R6: Initialization / accumulator emerges as a reduction ===
+  L2: {
+    title: "Initialize the accumulator",
+    body: "The loop-based version starts by creating a running total (total = 0). This is the seed value that will be updated as the loop finds qualifying items."
+  },
+  R6_fromL2: {
+    title: "The accumulator is implicit in sum(...)",
+    body: "In the compositional version, you don’t manually maintain total inside a loop. Instead, sum(...) performs the accumulation for you over a stream of transformed values."
+  },
+
+  // === L3 ↔ R6: Iteration step corresponds to pipeline execution ===
+  L3: {
+    title: "Iterate over the data",
+    body: "The for-loop explicitly steps through nums one element at a time. The work (select → transform → accumulate) happens inside this loop body."
+  },
+  R6_fromL3: {
+    title: "The pipeline runs over the whole sequence",
+    body: "Rather than stepping manually, filter(...) and map(...) describe how values flow. sum(...) then consumes that flow to produce one final result."
+  },
+
+  // === L4 ↔ (R2,R3,R6): predicate use vs predicate definition + use ===
+  L4: {
+    title: "Predicate: decide what continues",
+    body: "This if-statement is the predicate check. It controls which values are allowed to contribute to the total (only even numbers)."
+  },
+  R2R3R6_fromL4: {
+    title: "Predicate as a named function + filter(...)",
+    body: "The predicate logic is pulled out into is_even(x). filter(is_even, nums) uses that function to select the same values the if-statement selects on the left."
+  },
+
+  // === L5 ↔ (R4,R5,R6): transform step vs transform definition + use ===
+  L5: {
+    title: "Transform: compute a derived value",
+    body: "Inside the loop, y = x * x computes a new value from x (the square). This separates the ‘compute’ step from the ‘accumulate’ step below."
+  },
+  R4R5R6_fromL5: {
+    title: "Transform as a named function + map(...)",
+    body: "The transform logic becomes square(x). map(square, ...) applies that same computation to each selected value. The transform is reusable and clearly labeled."
+  },
+
+  // === L6 ↔ R6: explicit accumulation vs sum(...) reduction ===
+  L6: {
+    title: "Reduce: update the running total",
+    body: "total += y is the reduce step. It combines many transformed values (y) into one result (total) by repeatedly adding."
+  },
+  R6: {
+    title: "Compose: filter → map → sum",
+    body: "This single line expresses the same three steps: filter selects even numbers, map squares them, and sum reduces the squared values into one total."
+  },
+
+  // === LINE 7: Output ===
+  L7: {
+    title: "Same output",
+    body: "Both programs print the same final value. The difference is where the logic lives: the loop mixes steps together, while the pipeline makes each step explicit."
+  },
+  R7: {
+    title: "Same output",
+    body: "Both programs print the same final value. The difference is where the logic lives: the loop mixes steps together, while the pipeline makes each step explicit."
   }
+};
 
-  function onHighlightClick(e){
-    const el = e.currentTarget;
-    clearActive();
-    el.classList.add("active");
-    const key = el.dataset.map || "";
-    explain.textContent = EXPL[key] || "…";
+
+ function clearActive(){
+  document.querySelectorAll(".hl.active").forEach(el => el.classList.remove("active"));
+}
+
+/**
+ * Mapping rules (by gutter line numbers):
+ * - Match line 1 on both sides
+ * - Left 2 ↔ Right 6
+ * - Left 3 ↔ Right 6
+ * - Left 4 ↔ Right 2,3,6
+ * - Left 5 ↔ Right 4,5,6
+ * - Left 6 ↔ Right 6
+ * - Match line 7 on both sides
+ */
+const LINK = {
+  L: {
+    1: { R: [1] },
+    2: { R: [6] },
+    3: { R: [6] },
+    4: { R: [2,3,6] },
+    5: { R: [4,5,6] },
+    6: { R: [6] },
+    7: { R: [7] }
+  },
+  R: {
+    1: { L: [1] },
+    2: { L: [4] },
+    3: { L: [4] },
+    4: { L: [5] },
+    5: { L: [5] },
+    6: { L: [2,3,4,5,6] },
+    7: { L: [7] }
   }
+};
 
-  document.querySelectorAll(".hl").forEach(el => {
-    el.addEventListener("click", onHighlightClick);
-  });
+function getSide(el){
+  const box = el.closest(".codebox");
+  if (!box) return null;
+  if (box.id === "L_code") return "L";
+  if (box.id === "R_code") return "R";
+  return null;
+}
+
+function getLineNumber(el){
+  const gut = el.querySelector(".gutter");
+  const n = gut ? parseInt(gut.textContent.trim(), 10) : NaN;
+  return Number.isFinite(n) ? n : null;
+}
+
+function highlightLine(side, n){
+  const boxId = side === "L" ? "L_code" : "R_code";
+  const box = document.getElementById(boxId);
+  if (!box) return;
+  const lines = box.querySelectorAll(".line.hl");
+  for (const ln of lines){
+    const g = ln.querySelector(".gutter");
+    if (!g) continue;
+    if (parseInt(g.textContent.trim(), 10) === n){
+      ln.classList.add("active");
+      break;
+    }
+  }
+}
+
+function onHighlightClick(e){
+  const el = e.currentTarget;
+  const side = getSide(el);
+  const n = getLineNumber(el);
+
+  clearActive();
+  el.classList.add("active");
+
+const sideKey = side;              // "L" or "R"
+const lineKey = n;                 // 1..7
+
+let expl = null;
+
+// Pick explainer based on your mapping rules / combos
+if (sideKey === "L" && lineKey === 1) expl = EXPL_BY_LINE.L1;
+if (sideKey === "R" && lineKey === 1) expl = EXPL_BY_LINE.R1;
+
+if (sideKey === "L" && lineKey === 2) expl = EXPL_BY_LINE.L2;
+if (sideKey === "L" && lineKey === 3) expl = EXPL_BY_LINE.L3;
+
+if (sideKey === "L" && lineKey === 4) expl = EXPL_BY_LINE.L4;
+if (sideKey === "L" && lineKey === 5) expl = EXPL_BY_LINE.L5;
+if (sideKey === "L" && lineKey === 6) expl = EXPL_BY_LINE.L6;
+
+if (sideKey === "L" && lineKey === 7) expl = EXPL_BY_LINE.L7;
+if (sideKey === "R" && lineKey === 7) expl = EXPL_BY_LINE.R7;
+
+// Right-side specific mappings (using your combos)
+if (sideKey === "R" && lineKey === 2) expl = EXPL_BY_LINE.R2R3R6_fromL4;
+if (sideKey === "R" && lineKey === 3) expl = EXPL_BY_LINE.R2R3R6_fromL4;
+
+if (sideKey === "R" && lineKey === 4) expl = EXPL_BY_LINE.R4R5R6_fromL5;
+if (sideKey === "R" && lineKey === 5) expl = EXPL_BY_LINE.R4R5R6_fromL5;
+
+if (sideKey === "R" && lineKey === 6) expl = EXPL_BY_LINE.R6;
+if (sideKey === "R" && lineKey === 6 && (LINK.R[6]?.L || []).includes(2)) {
+  // keep R6 as the canonical explanation
+  expl = EXPL_BY_LINE.R6;
+}
+
+if (!expl){
+  explain.textContent = "…";
+} else {
+  explain.innerHTML = `<strong>${expl.title}</strong><br>${expl.body}`;
+}
+
+
+  explain.classList.remove("placeholder");
+
+  if (!side || !n) return;
+
+  const mapping = LINK[side]?.[n];
+  if (!mapping) return;
+
+  // Apply mapped highlights
+  if (side === "L" && mapping.R){
+    mapping.R.forEach(rn => highlightLine("R", rn));
+  }
+  if (side === "R" && mapping.L){
+    mapping.L.forEach(ln => highlightLine("L", ln));
+  }
+}
+
+document.querySelectorAll("#L_code .line.hl, #R_code .line.hl").forEach(el => {
+  el.addEventListener("click", onHighlightClick);
+});
+ 
 
   let midOn = false;
 
