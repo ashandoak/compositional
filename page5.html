@@ -142,6 +142,7 @@
     const PREVIEW_PROMPT = "# Complete the steps above, then press Run";
     previewEl.textContent = PREVIEW_PROMPT;
 
+
     // --- Functions (only those needed across challenges; still “guided”) ---
     const FUNCTIONS = {
       // predicates
@@ -384,7 +385,13 @@
       // terminal initial prompt
       clearStatus();
       resultEl.textContent = "Output:\n—";
-      previewEl.textContent = "# Complete the steps above, then press Run";
+      previewEl.textContent = PREVIEW_PROMPT;
+      // --- reset typing state so completing the challenge always animates ---
+      typingLock = false;
+      pendingPreview = null;
+      lastPreviewText = "";
+      previewTypedForState = false;
+      lastReadySignature = "";
       updateRunButton();
     }
 
@@ -472,22 +479,24 @@
       bankOrderedEl.appendChild(note);
     }
 
-    function renderPreview(){
-      const ch = CHALLENGES[challengeIndex];
 
-      // Only type when the whole pipeline is correct
+   function renderPreview(){
+      // Keep preview completely unchanged until the pipeline is fully correct
       if (!isRunnable()){
         previewTypedForState = false;
         lastReadySignature = "";
-        previewEl.textContent = PREVIEW_PROMPT;  // <- do not change preview at all
+        pendingPreview = null;
+        lastPreviewText = "";              // ensures we animate when it becomes runnable
+
+        previewEl.textContent = PREVIEW_PROMPT;
         resultEl.textContent = "Output:\n—";
         updateRunButton();
         return;
       }
 
-      // Runnable: type full program (including nums) once per completed config
-      clearStatus();
-      const code = ch.preview(numsText(ch.nums));  // should include nums line
+      // Runnable: type full program (includes nums) once per completed configuration
+      const ch = CHALLENGES[challengeIndex];
+      const code = ch.preview(numsText(ch.nums)); // your preview builder already includes nums
       const sig = readySignature();
 
       if (!previewTypedForState || sig !== lastReadySignature){
@@ -502,11 +511,32 @@
       workspaceEl.classList.add("good");
       updateRunButton();
     }
+ 
 
  
 
     function readySignature(){
       return filled.map(x => x ? `${x.type}:${x.id}` : "_").join("|");
+    }
+
+    function isRunnable(){
+      if (typingLock) return false;
+
+      const ch = CHALLENGES[challengeIndex];
+
+      // every step must be filled and must match the required item for that step
+      for (let i = 0; i < ch.steps.length; i++){
+        const need = ch.steps[i];
+        const got = filled[i];
+
+        if (!got) return false;
+        if (got.type !== need.type) return false;
+        if (got.id !== need.id) return false;
+
+        if (need.type === "fn" && got.kind !== need.kind) return false;
+      }
+
+      return true;
     }
 
 
