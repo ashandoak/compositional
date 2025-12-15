@@ -65,7 +65,7 @@
         <button id="runBtn" class="btn-primary" disabled>Run</button>
       </div>
       <div class="btnrow">
-        <button id="nextBtn" class="btn-next" disabled>Next ▶</button>
+        <button id="nextBtn" class="btn-next">Next ▶</button>
       </div>
     </div>
 
@@ -114,6 +114,9 @@
   const nextBtn = document.getElementById("nextBtn");
   const resetBtn = document.getElementById("resetBtn");
   const toastEl = document.getElementById("toast");
+
+  nextBtn.disabled = false;
+
 
   // ----------------------------
   // Utilities
@@ -340,7 +343,6 @@
 
         clearHint();
         clearResults();
-        nextBtn.disabled = true;
         renderWorkspace();
         updateButtons();
       });
@@ -380,7 +382,6 @@
 
     clearHint();
     clearResults();
-    nextBtn.disabled = true;
 
     // If they place a line that is structurally impossible given current ordering,
     // we don't block it (Parsons problems often allow it), but we can provide gentle hint
@@ -423,7 +424,6 @@
 
     clearHint();
     clearResults();
-    nextBtn.disabled = true;
 
     renderPool(currentPoolIds);
     updateCounts(currentPoolIds);
@@ -437,7 +437,6 @@
   runBtn.addEventListener("click", () => {
     clearHint();
     clearResults();
-    nextBtn.disabled = true;
 
     // First: structural sanity checks (so we can offer a friendly message)
     const s = structuralPlacementOK(workspace);
@@ -469,7 +468,6 @@
       dropzoneEl.classList.remove("bad", "warn");
       dropzoneEl.classList.add("good");
       setHint("✅ This code runs correctly and produces the expected result.", "good");
-      nextBtn.disabled = false;
       showToast("Nice — correct result!");
     } else {
       // If structure is OK but ordering isn't exact, we treat as incorrect for this Parsons puzzle.
@@ -493,7 +491,6 @@
 
   function init() {
     workspace = [];
-    nextBtn.disabled = true;
     clearHint();
     clearResults();
     dropzoneEl.classList.remove("good", "bad", "warn");
