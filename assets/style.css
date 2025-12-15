@@ -1065,3 +1065,39 @@ body[data-page="3"] .page3-workspace .slot + .slot{
 body[data-page="3"] .page3-workspace .ws-row + .ws-row{
   margin-top: 14px;
 }
+
+/* =========================
+   GLOBAL: prevent bottom nav overlap on short viewports
+   ========================= */
+
+/* Let the app be at least the viewport height, but grow if content needs it */
+.app{
+  min-height: 100vh;
+  height: auto; /* overrides the earlier height: 100% */
+}
+
+/* On short viewports, remove the forced 520px middle row */
+@media (max-height: 760px){
+  .app{
+    grid-template-rows: auto auto auto; /* top / main / bottom */
+  }
+
+  /* Don’t force the center area to pretend it has lots of space */
+  .main{
+    min-height: unset;
+  }
+
+  /* If any page relies on scrolling inside panels, keep it,
+     but ensure the overall page can scroll naturally. */
+  body{
+    height: auto;
+    min-height: 100%;
+  }
+}
+
+/* Bottom bars should wrap instead of squeezing into overlap */
+.bottom,
+.footer{
+  flex-wrap: wrap;
+  row-gap: 10px;
+}
