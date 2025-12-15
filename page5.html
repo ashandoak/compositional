@@ -30,33 +30,40 @@
 
         <!-- PANEL BODY: interactive area ONLY -->
         <div class="panel-body">
-          <div class="workspace page3-workspace" id="workspace" aria-label="Workspace surface">
-           <div class="ws-row">
+        <div class="workspace page3-workspace" id="workspace" aria-label="Workspace surface">
+
+          <!-- NEW: Challenge text (inside workspace, above nums) -->
+          <div class="page5-challenge" id="challengeBox" aria-label="Challenge">
+            <div class="page5-challenge-top">
+            <button class="ch-nav" id="chPrev" aria-label="Previous challenge" title="Previous challenge">‹</button>
+
+            <div class="page5-challenge-center">
+              <div class="page5-challenge-title" id="challengeTitle">Challenge 1</div>
+              <div class="page5-challenge-meta" id="challengeMeta">Requires: …</div>
+            </div>
+
+            <button class="ch-nav" id="chNext" aria-label="Next challenge" title="Next challenge">›</button>
+          </div>
+            <div class="page5-challenge-desc" id="challengeDesc">…</div>
+          </div>
+
+          <!-- Input slot (nums) -->
+          <div class="ws-row">
             <div class="slot locked page3-static" id="staticNums">
               <div class="slot-label">Input</div>
               <div class="slot-body">
-                <span>nums = [1, 2, 3, 4, 5, 6]</span>
+                <span id="numsDecl">nums = [1, 2, 3, 4, 5, 6]</span>
               </div>
             </div>
           </div>
+
+          <!-- NEW: Ordered pipeline slots (rendered by JS) -->
+          <div class="ws-row">
+            <div class="page5-pipeline" id="pipelineSlots"></div>
+          </div>
+
+        </div>
  
-
-            <div class="ws-row">
-              <div class="slot" id="slotPrimitive">
-                <div class="slot-label">Primitive</div>
-                <div class="slot-body">
-                  <span class="placeholder">Drop a primitive here</span>
-                </div>
-              </div>
-
-              <div class="slot" id="slotFunction">
-                <div class="slot-label">Function (optional)</div>
-                <div class="slot-body">
-                  <span class="placeholder">Drop a predicate/transform here (if needed)</span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- PANEL FOOTER: terminal is OUTSIDE panel-body (IDENTICAL TO PAGE 3) -->
@@ -83,53 +90,11 @@
           <div class="pill">Drag items</div>
         </div>
 
-        <div class="panel-body">
-
-          <div class="group-title">Primitives</div>
-
-          <div class="draggable" draggable="true" data-type="primitive" data-id="filter">
-            <span>filter( predicate, data )</span>
-          </div>
-          <div class="draggable" draggable="true" data-type="primitive" data-id="map">
-            <span>map( transform, data )</span>
-          </div>
-          <div class="draggable" draggable="true" data-type="primitive" data-id="sum">
-            <span>sum( data )</span>
-          </div>
-
-          <div style="height:14px;"></div>
-
-          <div class="group-title">Functions</div>
-
-          <div class="bank-subhead">Predicates (✔/✖)</div>
-
-          <div class="draggable" draggable="true" data-type="fn" data-kind="predicate" data-id="is_even">
-            <span>is_even(x)</span>
-          </div>
-          <div class="draggable" draggable="true" data-type="fn" data-kind="predicate" data-id="is_positive">
-            <span>is_positive(x)</span>
-          </div>
-          <div class="draggable" draggable="true" data-type="fn" data-kind="predicate" data-id="greater_than_2">
-            <span>greater_than_2(x)</span>
-          </div>
-
-          <div style="height:14px;"></div>
-
-          <div class="bank-subhead">Transforms (→)</div>
-
-          <div class="draggable" draggable="true" data-type="fn" data-kind="transform" data-id="square">
-            <span>square(x)</span>
-          </div>
-          <div class="draggable" draggable="true" data-type="fn" data-kind="transform" data-id="double">
-            <span>double(x)</span>
-          </div>
-          <div class="draggable" draggable="true" data-type="fn" data-kind="transform" data-id="negate">
-            <span>negate(x)</span>
-          </div>
-
-          <!-- Keep the element if your JS references it, but hide via CSS -->
+       <div class="panel-body">
+          <div id="bankOrdered"></div>
           <div class="hint" id="rightHint" style="margin-top:12px;"></div>
         </div>
+ 
       </section>
     </div>
 
@@ -149,163 +114,151 @@
   </div>
 
   <script src="assets/nav.js"></script>
-<script>
-    // ---- Data model ----
-    const NUMS = [1,2,3,4,5,6];
+  <script>
+    // =========================
+    // Page 5 — Guided challenges (Page 3 terminal + typing behavior)
+    // =========================
 
+    // --- DOM ---
+    const workspaceEl = document.getElementById("workspace");
+    const pipelineSlotsEl = document.getElementById("pipelineSlots");
+    const bankOrderedEl = document.getElementById("bankOrdered");
+
+    const challengeTitleEl = document.getElementById("challengeTitle");
+    const challengeMetaEl  = document.getElementById("challengeMeta");
+    const challengeDescEl  = document.getElementById("challengeDesc");
+    const numsDeclEl       = document.getElementById("numsDecl");
+
+    const previewEl = document.getElementById("preview");
+    const resultEl  = document.getElementById("result");
+    const hintEl    = document.getElementById("hint");
+
+    const runBtn = document.getElementById("runBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    const chPrevBtn = document.getElementById("chPrev");
+    const chNextBtn = document.getElementById("chNext");
+
+
+    // --- Functions (only those needed across challenges; still “guided”) ---
     const FUNCTIONS = {
       // predicates
       is_even: { kind: "predicate", label: "is_even", apply: (x) => x % 2 === 0 },
       is_positive: { kind: "predicate", label: "is_positive", apply: (x) => x > 0 },
       greater_than_2: { kind: "predicate", label: "greater_than_2", apply: (x) => x > 2 },
+
       // transforms
       square: { kind: "transform", label: "square", apply: (x) => x * x },
       double: { kind: "transform", label: "double", apply: (x) => x * 2 },
-      negate: { kind: "transform", label: "negate", apply: (x) => -x }
+      negate: { kind: "transform", label: "negate", apply: (x) => -x },
     };
 
-    const PRIMITIVES = {
-      filter: {
-        label: "filter",
-        needsFunction: true,
-        accepts: "predicate",
-        preview: (fnLabel, numsText) => `nums = ${numsText}\nresult = list(filter(${fnLabel}, nums))\nprint(result)`,
-        explain: "filter keeps values that satisfy the predicate (True/False test).",
-        eval: (arr, fn) => arr.filter(fn.apply)
+    // --- Primitives ---
+    const PRIMS = {
+      filter: { label: "filter", needs: "predicate" },
+      map:    { label: "map",    needs: "transform" },
+      sum:    { label: "sum",    needs: null },
+    };
+
+    // --- Challenges (increasing complexity) ---
+    // 1) map
+    // 2) map + sum
+    // 3) filter + map + sum (different from earlier example: positives + square + sum)
+    const CHALLENGES = [
+      {
+        title: "Challenge 1 — Transform with map",
+        desc: "Square every value in nums. Your output should be a new list.",
+        nums: [1, 2, 3, 4],
+        steps: [
+          { type: "primitive", id: "map" },
+          { type: "fn", kind: "transform", id: "square" },
+        ],
+        preview: (numsTxt) => [
+          `nums = ${numsTxt}`,
+          ``,
+          `def square(x): return x * x`,
+          `result = list(map(square, nums))`,
+          `print(result)`
+        ].join("\n"),
+        eval: (nums) => nums.map(FUNCTIONS.square.apply)
       },
-      map: {
-        label: "map",
-        needsFunction: true,
-        accepts: "transform",
-        preview: (fnLabel, numsText) => `nums = ${numsText}\nresult = list(map(${fnLabel}, nums))\nprint(result)`,
-        explain: "map transforms every value independently.",
-        eval: (arr, fn) => arr.map(fn.apply)
+      {
+        title: "Challenge 2 — Map then reduce with sum",
+        desc: "Double each value, then sum the results into a single total.",
+        nums: [2, 5, 7],
+        steps: [
+          { type: "primitive", id: "map" },
+          { type: "fn", kind: "transform", id: "double" },
+          { type: "primitive", id: "sum" },
+        ],
+        preview: (numsTxt) => [
+          `nums = ${numsTxt}`,
+          ``,
+          `def double(x): return x * 2`,
+          `total = sum(map(double, nums))`,
+          `print(total)`
+        ].join("\n"),
+        eval: (nums) => nums.map(FUNCTIONS.double.apply).reduce((a,b)=>a+b, 0)
       },
-      sum: {
-        label: "sum",
-        needsFunction: false,
-        accepts: null,
-        preview: (_fnLabel, numsText) => `nums = ${numsText}\nresult = sum(nums)\nprint(result)`,
-        explain: "sum combines all numeric values into a single result.",
-        eval: (arr) => arr.reduce((a,b) => a + b, 0)
+      {
+        title: "Challenge 3 — Filter, map, then sum",
+        desc: "Keep only the positive values, square them, then sum the squares.",
+        nums: [-3, -1, 0, 2, 4],
+        steps: [
+          { type: "primitive", id: "filter" },
+          { type: "fn", kind: "predicate", id: "is_positive" },
+          { type: "primitive", id: "map" },
+          { type: "fn", kind: "transform", id: "square" },
+          { type: "primitive", id: "sum" },
+        ],
+        preview: (numsTxt) => [
+          `nums = ${numsTxt}`,
+          ``,
+          `def is_positive(x): return x > 0`,
+          `def square(x): return x * x`,
+          `total = sum(map(square, filter(is_positive, nums)))`,
+          `print(total)`
+        ].join("\n"),
+        eval: (nums) => nums
+          .filter(FUNCTIONS.is_positive.apply)
+          .map(FUNCTIONS.square.apply)
+          .reduce((a,b)=>a+b, 0)
       }
-    };
+    ];
 
-    // ---- UI state ----
-    let selectedPrimitive = null;
-    let selectedFunction = null;
+    // --- State ---
+    let challengeIndex = 0;
+    let filled = []; // array of {stepIndex, type, id} or null
 
-    // ---- DOM ----
-    const toastEl = document.getElementById("toast");
-    const workspaceEl = document.getElementById("workspace");
-
-    const slotPrimitiveEl = document.getElementById("slotPrimitive");
-    const slotFunctionEl = document.getElementById("slotFunction");
-
-    const previewEl = document.getElementById("preview");
-    const resultEl = document.getElementById("result");
-    const hintEl = document.getElementById("hint");
-    const rightHintEl = document.getElementById("rightHint");
-
-    const runBtn = document.getElementById("runBtn");
-
-    // ---- Terminal typing animation (NEW) ----
+    // --- Terminal typing (same approach as Page 3) ---
     let typingLock = false;
     let pendingPreview = null;
     let lastPreviewText = "";
-    let lastRunnable = false;
+    let ranOnce = false;
 
     function escapeHtml(s){
       return String(s).replace(/[&<>"']/g, (c)=>({
-        "&":"&amp;",
-        "<":"&lt;",
-        ">":"&gt;",
-        '"':"&quot;",
-        "'":"&#039;"
+        "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
       }[c]));
     }
 
-    function showToast(msg){
-      toastEl.textContent = msg;
-      toastEl.classList.add("show");
-      window.clearTimeout(showToast._t);
-      showToast._t = window.setTimeout(()=>toastEl.classList.remove("show"), 2000);
-    }
-
-    function numsText(){
-      return `[${NUMS.join(", ")}]`;
-    }
-
-    function clearWorkspaceStatus(){
-      workspaceEl.classList.remove("good","warn","bad");
-      hintEl.style.display = "none";
-      hintEl.textContent = "";
-    }
-
-    function setWorkspaceStatus(kind, msg){
-      workspaceEl.classList.remove("good","warn","bad");
-      workspaceEl.classList.add(kind);
-      hintEl.style.display = "block";
-      hintEl.textContent = msg;
-    }
-
-    function invalidHint(primLabel){
-      if (primLabel === "filter") return "filter needs a function that returns True/False (a predicate).";
-      if (primLabel === "map") return "map needs a function that returns a value (a transform).";
-      return "That function doesn't fit this primitive.";
-    }
-
-    function formatOut(out){
-      if (Array.isArray(out)) return `[${out.join(", ")}]`;
-      return String(out);
-    }
-
-    function displayPrimitiveText(pid){
-      if (pid === "filter") return "filter( predicate, data )";
-      if (pid === "map") return "map( transform, data )";
-      if (pid === "sum") return "sum( data )";
-      return pid;
-    }
-
-    function displayFnText(fid){
-      const f = FUNCTIONS[fid];
-      return f ? `${f.label}(x)` : fid;
-    }
-
-    function setLocked(slotEl, isLocked){
-      slotEl.classList.toggle("locked", !!isLocked);
-    }
-
-    function isRunnable(){
-      if (!selectedPrimitive) return false;
-      const prim = PRIMITIVES[selectedPrimitive];
-      if (!prim) return false;
-      if (!prim.needsFunction) return true;
-      if (!selectedFunction) return false;
-      const fn = FUNCTIONS[selectedFunction];
-      return !!fn && fn.kind === prim.accepts;
-    }
-
-    function updateRunButton(){
-      const runnable = isRunnable();
-      runBtn.disabled = !runnable || typingLock;
-      runBtn.setAttribute("aria-disabled", String(runBtn.disabled));
-      runBtn.classList.toggle("is-enabled", runnable && !typingLock);
-
-      // Only show a “ready” toast when we transition to runnable
-      if (runnable && !lastRunnable){
-        showToast("Ready — press Run.");
-      }
-      lastRunnable = runnable;
-    }
-
     function setTypingContent(el, text){
-      // Insert cursor span without breaking <pre> whitespace
       el.innerHTML = `${escapeHtml(text)}<span class="term-cursor" aria-hidden="true"></span>`;
     }
 
+    function setTypingContentNoCursor(el, text){
+      el.textContent = String(text ?? "");
+    }
+
+    function updateChallengeNav(){
+      if (!chPrevBtn || !chNextBtn) return;
+      chPrevBtn.disabled = (challengeIndex === 0);
+      chNextBtn.disabled = (challengeIndex === CHALLENGES.length - 1);
+    }
+
+
     async function typeText(el, fullText, opts = {}){
-      const speed = typeof opts.speed === "number" ? opts.speed : 10; // ms per char
+      const speed = typeof opts.speed === "number" ? opts.speed : 18; // slowed default
       const startBlank = opts.startBlank ?? true;
 
       typingLock = true;
@@ -314,16 +267,10 @@
       const text = String(fullText ?? "");
       let i = 0;
 
-      if (startBlank) {
-        setTypingContent(el, "");
-      } else {
-        // If not blank, we still retype from scratch for consistency
-        setTypingContent(el, "");
-      }
+      if (startBlank) setTypingContent(el, "");
 
       while (i < text.length){
-        // chunk typing for speed (avoid too-slow long blocks)
-        const step = Math.min(3, text.length - i);
+        const step = Math.min(2, text.length - i); // slightly smaller chunking
         i += step;
         setTypingContent(el, text.slice(0, i));
         await new Promise(r => setTimeout(r, speed));
@@ -342,7 +289,6 @@
         return;
       }
 
-      // Fire and forget; when done, flush any pending preview update
       (async ()=>{
         await typeText(previewEl, newText, { speed: 18, startBlank: true });
         if (pendingPreview && pendingPreview !== newText){
@@ -355,136 +301,294 @@
       })();
     }
 
-    // ---- Rendering ----
-    function renderSlots(){
-      // Primitive slot
-      const primBody = slotPrimitiveEl.querySelector(".slot-body");
-      primBody.innerHTML = selectedPrimitive
-        ? `<span>${escapeHtml(displayPrimitiveText(selectedPrimitive))}</span>`
-        : `<span class="placeholder">Drop a primitive here</span>`;
-      setLocked(slotPrimitiveEl, !!selectedPrimitive);
+    // --- Workspace UI helpers ---
+    function clearStatus(){
+      workspaceEl.classList.remove("good","warn","bad");
+      hintEl.style.display = "none";
+      hintEl.textContent = "";
+    }
 
-      // Function slot
-      const fnBody = slotFunctionEl.querySelector(".slot-body");
-      if (!selectedPrimitive){
-        fnBody.innerHTML = `<span class="placeholder">Drop a predicate/transform here (if needed)</span>`;
-        setLocked(slotFunctionEl, false);
-      } else {
-        const prim = PRIMITIVES[selectedPrimitive];
-        if (!prim.needsFunction){
-          fnBody.innerHTML = `<span class="placeholder">(not needed for sum)</span>`;
-          setLocked(slotFunctionEl, true);
-        } else if (selectedFunction){
-          fnBody.innerHTML = `<span>${escapeHtml(displayFnText(selectedFunction))}</span>`;
-          setLocked(slotFunctionEl, true);
+    function setStatus(kind, msg){
+      workspaceEl.classList.remove("good","warn","bad");
+      workspaceEl.classList.add(kind);
+      hintEl.style.display = "block";
+      hintEl.textContent = msg;
+    }
+
+    function numsText(nums){
+      return `[${nums.join(", ")}]`;
+    }
+
+    function formatOut(out){
+      if (Array.isArray(out)) return `[${out.join(", ")}]`;
+      return String(out);
+    }
+
+    // --- Rendering ---
+    function renderChallenge(){
+      const ch = CHALLENGES[challengeIndex];
+
+      // header + meta
+      challengeTitleEl.textContent = ch.title;
+      challengeDescEl.textContent = ch.desc;
+
+      // counts
+      const primCount = ch.steps.filter(s => s.type === "primitive").length;
+      const fnCount   = ch.steps.filter(s => s.type === "fn").length;
+      challengeMetaEl.textContent = `Requires: ${primCount} primitive${primCount===1?"":"s"}, ${fnCount} function${fnCount===1?"":"s"}`;
+
+      // input nums
+      numsDeclEl.textContent = `nums = ${numsText(ch.nums)}`;
+
+      // reset filled steps
+      filled = ch.steps.map(()=>null);
+      ranOnce = false;
+
+      // render pipeline slots
+      pipelineSlotsEl.innerHTML = "";
+      ch.steps.forEach((step, i) => {
+        const slot = document.createElement("div");
+        slot.className = "slot";
+        slot.dataset.stepIndex = String(i);
+
+        const label = document.createElement("div");
+        label.className = "slot-label";
+
+        if (step.type === "primitive"){
+          label.textContent = `Step ${i+1}: Primitive`;
         } else {
-          fnBody.innerHTML = `<span class="placeholder">Drop a ${prim.accepts} here</span>`;
-          setLocked(slotFunctionEl, false);
+          label.textContent = `Step ${i+1}: ${step.kind === "predicate" ? "Predicate" : "Transform"}`;
         }
-      }
 
-      renderPreviewOnly();
+        const body = document.createElement("div");
+        body.className = "slot-body";
+        body.innerHTML = `<span class="placeholder">Drop ${step.type === "primitive" ? "a primitive" : "a " + step.kind} here</span>`;
+
+        slot.appendChild(label);
+        slot.appendChild(body);
+
+        enableSlotDnD(slot, step);
+        pipelineSlotsEl.appendChild(slot);
+      });
+
+      // render ordered toolbox items (guided)
+      renderFullBank(ch);
+
+      updateChallengeNav();
+
+      // terminal initial prompt
+      clearStatus();
+      resultEl.textContent = "Output:\n—";
+      setTypingContent(previewEl, "# Complete the steps above, then press Run");
       updateRunButton();
     }
 
-    function renderPreviewOnly(){
-      clearWorkspaceStatus();
+    function renderFullBank(){
+      bankOrderedEl.innerHTML = "";
 
-      // Need primitive
-      if (!selectedPrimitive){
-        queuePreviewTyping("# Drag a primitive + (if needed) a function");
-        return;
-      }
+      // Primitives
+      const primTitle = document.createElement("div");
+      primTitle.className = "group-title";
+      primTitle.textContent = "Primitives";
+      bankOrderedEl.appendChild(primTitle);
 
-      const prim = PRIMITIVES[selectedPrimitive];
-      const numsTxt = numsText();
+      ["filter", "map", "sum"].forEach((pid) => {
+        const card = document.createElement("div");
+        card.className = "draggable";
+        card.setAttribute("draggable", "true");
+        card.dataset.type = "primitive";
+        card.dataset.id = pid;
+        // no stepIndex now — user chooses
 
-      // Need compatible function if required
-      if (prim.needsFunction && !selectedFunction){
-        queuePreviewTyping(`nums = ${numsTxt}\n# Add a ${prim.accepts} to complete this call`);
-        setWorkspaceStatus("warn", `Tip: ${prim.label} needs a ${prim.accepts}.`);
-        return;
-      }
+        const label = pid === "filter" ? "filter( predicate, data )"
+                  : pid === "map"    ? "map( transform, data )"
+                  :                   "sum( data )";
+        card.innerHTML = `<span>${label}</span>`;
+        attachDraggable(card);
+        bankOrderedEl.appendChild(card);
+      });
 
-      if (prim.needsFunction && selectedFunction){
-        const fn = FUNCTIONS[selectedFunction];
-        if (!fn || fn.kind !== prim.accepts){
-          queuePreviewTyping(`nums = ${numsTxt}\n# That function doesn't fit here`);
-          setWorkspaceStatus("warn", invalidHint(prim.label));
-          return;
-        }
-      }
+      const spacer1 = document.createElement("div");
+      spacer1.style.height = "14px";
+      bankOrderedEl.appendChild(spacer1);
 
-      const fnLabel = selectedFunction ? FUNCTIONS[selectedFunction].label : null;
-      queuePreviewTyping(prim.preview(fnLabel, numsTxt));
+      // Functions
+      const fnTitle = document.createElement("div");
+      fnTitle.className = "group-title";
+      fnTitle.textContent = "Functions";
+      bankOrderedEl.appendChild(fnTitle);
 
-      // Output stays unchanged until Run is pressed
-      resultEl.textContent = "Output:\n—";
-      workspaceEl.classList.add("good");
+      const predHead = document.createElement("div");
+      predHead.className = "bank-subhead";
+      predHead.textContent = "Predicates (✔/✖)";
+      bankOrderedEl.appendChild(predHead);
+
+      const predicates = ["is_even", "is_positive", "greater_than_2"].filter(id => FUNCTIONS[id]);
+      predicates.forEach((fid) => {
+        const card = document.createElement("div");
+        card.className = "draggable";
+        card.setAttribute("draggable", "true");
+        card.dataset.type = "fn";
+        card.dataset.kind = "predicate";
+        card.dataset.id = fid;
+        card.innerHTML = `<span>${fid}(x)</span>`;
+        attachDraggable(card);
+        bankOrderedEl.appendChild(card);
+      });
+
+      const spacer2 = document.createElement("div");
+      spacer2.style.height = "14px";
+      bankOrderedEl.appendChild(spacer2);
+
+      const transHead = document.createElement("div");
+      transHead.className = "bank-subhead";
+      transHead.textContent = "Transforms (→)";
+      bankOrderedEl.appendChild(transHead);
+
+      const transforms = ["square", "double", "negate"].filter(id => FUNCTIONS[id]);
+      transforms.forEach((fid) => {
+        const card = document.createElement("div");
+        card.className = "draggable";
+        card.setAttribute("draggable", "true");
+        card.dataset.type = "fn";
+        card.dataset.kind = "transform";
+        card.dataset.id = fid;
+        card.innerHTML = `<span>${fid}(x)</span>`;
+        attachDraggable(card);
+        bankOrderedEl.appendChild(card);
+      });
+
+      // Tip
+      const note = document.createElement("div");
+      note.className = "small";
+      note.style.marginTop = "10px";
+      note.style.color = "rgba(11,18,32,0.55)";
+      note.textContent = "Tip: Drag items into Step slots in order. The challenge tells you how many primitives and functions you need.";
+      bankOrderedEl.appendChild(note);
     }
 
-    async function runAndTypeOutput(){
-      if (!isRunnable() || typingLock) return;
+    function renderPreview(){
+      const ch = CHALLENGES[challengeIndex];
+      const numsTxt = numsText(ch.nums);
 
-      // Freeze the preview without a cursor once Run is pressed
+      // If not all filled, show a partially guided preview
+      const allFilled = filled.every(x => x !== null);
+
+      if (!allFilled){
+        // show “skeleton” preview so they understand the goal without giving it all away
+        // (still types like Page 3 on each drop)
+        const missing = filled.findIndex(x => x === null);
+        queuePreviewTyping(
+          `nums = ${numsTxt}\n# Fill Step ${missing+1} to continue…`
+        );
+        setStatus("warn", `Complete Step ${missing+1}.`);
+        updateRunButton();
+        return;
+      }
+
+      // All filled: show final preview (the canonical one for the challenge)
+      clearStatus();
+      const code = ch.preview(numsTxt);
+      queuePreviewTyping(code);
+      workspaceEl.classList.add("good");
+
+      // reset output until Run
+      resultEl.textContent = "Output:\n—";
+      updateRunButton();
+    }
+
+    function isRunnable(){
+      if (typingLock) return false;
+      const ch = CHALLENGES[challengeIndex];
+      // all steps must be filled with the correct IDs
+      for (let i=0; i<ch.steps.length; i++){
+        const need = ch.steps[i];
+        const got = filled[i];
+        if (!got) return false;
+        if (got.type !== need.type) return false;
+        if (got.id !== need.id) return false;
+        if (need.type === "fn" && got.kind !== need.kind) return false;
+      }
+      return true;
+    }
+
+    function updateRunButton(){
+      const ok = isRunnable();
+      runBtn.disabled = !ok;
+      runBtn.setAttribute("aria-disabled", String(runBtn.disabled));
+      runBtn.classList.toggle("is-enabled", ok);
+    }
+
+    async function runChallenge(){
+      if (!isRunnable()) return;
+
+      // Freeze preview (remove cursor) after Run pressed
       setTypingContentNoCursor(previewEl, lastPreviewText || previewEl.textContent);
 
-      clearWorkspaceStatus();
+      clearStatus();
 
-      const prim = PRIMITIVES[selectedPrimitive];
-      const arr = NUMS.slice();
-
+      const ch = CHALLENGES[challengeIndex];
       let out;
       try {
-        out = prim.needsFunction ? prim.eval(arr, FUNCTIONS[selectedFunction]) : prim.eval(arr);
-      } catch (e) {
-        setWorkspaceStatus("bad", "Something went wrong evaluating this pipeline.");
+        out = ch.eval(ch.nums.slice());
+      } catch {
+        setStatus("bad", "Something went wrong evaluating this pipeline.");
         await typeText(resultEl, "Output:\n—", { speed: 14, startBlank: true });
         return;
       }
 
-      const outputText = `Output:\n${formatOut(out)}\n\n# ${prim.explain}`;
+      ranOnce = true;
+      const outputText = `Output:\n${formatOut(out)}`;
       await typeText(resultEl, outputText, { speed: 14, startBlank: true });
+
       workspaceEl.classList.add("good");
+
+      // advance hint
+      if (challengeIndex < CHALLENGES.length - 1){
+        setStatus("good", "Nice. Use Reset to try again, or move to the next challenge.");
+      } else {
+        setStatus("good", "All challenges complete.");
+      }
     }
 
-    function resetAll(){
-      selectedPrimitive = null;
-      selectedFunction = null;
-
-      clearWorkspaceStatus();
-      resultEl.textContent = "Output:\n—";
-
-      renderSlots();
-      showToast("Reset.");
+    function resetCurrent(){
+      renderChallenge();
     }
 
-    // ---- Drag & drop ----
-    function attachDraggables(){
-      document.querySelectorAll(".draggable").forEach(el=>{
-        el.addEventListener("dragstart", (e)=>{
-          el.classList.add("dragging");
-          const payload = {
-            type: el.dataset.type,
-            id: el.dataset.id,
-            kind: el.dataset.kind || null
-          };
-          e.dataTransfer.setData("text/plain", JSON.stringify(payload));
-          e.dataTransfer.effectAllowed = "move";
-        });
-        el.addEventListener("dragend", ()=>el.classList.remove("dragging"));
+    // --- Drag/drop ---
+    function attachDraggable(el){
+      el.addEventListener("dragstart", (e)=>{
+        el.classList.add("dragging");
+        const payload = {
+          type: el.dataset.type,
+          id: el.dataset.id,
+          kind: el.dataset.kind || null
+        };
+        e.dataTransfer.setData("text/plain", JSON.stringify(payload));
+        e.dataTransfer.effectAllowed = "move";
       });
+      el.addEventListener("dragend", ()=>el.classList.remove("dragging"));
     }
 
-    function allowDrop(el){
-      el.addEventListener("dragover", (e)=>{
+    chPrevBtn.addEventListener("click", () => {
+      if (challengeIndex <= 0) return;
+      challengeIndex--;
+      renderChallenge();
+    });
+
+    chNextBtn.addEventListener("click", () => {
+      if (challengeIndex >= CHALLENGES.length - 1) return;
+      challengeIndex++;
+      renderChallenge();
+    });
+
+    function enableSlotDnD(slotEl, expectedStep){
+      slotEl.addEventListener("dragover", (e)=>{
         e.preventDefault();
         e.dataTransfer.dropEffect = "move";
       });
-    }
 
-    function handleDropOnSlot(slotKind){
-      return (e)=>{
+      slotEl.addEventListener("drop", (e)=>{
         e.preventDefault();
         const raw = e.dataTransfer.getData("text/plain");
         if (!raw) return;
@@ -492,74 +596,56 @@
         let payload;
         try { payload = JSON.parse(raw); } catch { return; }
 
-        if (slotKind === "primitive"){
-          if (payload.type !== "primitive"){
-            showToast("Drop a primitive here.");
-            return;
-          }
-          selectedPrimitive = payload.id;
-          selectedFunction = null; // avoid stale mismatch
-          renderSlots();
-          showToast("Primitive set.");
+        const idx = parseInt(slotEl.dataset.stepIndex, 10);
+        const need = CHALLENGES[challengeIndex].steps[idx];
+
+        // enforce correct order + correct item (guided Parsons)
+        if (payload.type !== need.type){
+          setStatus("warn", `Step ${idx+1} needs a ${need.type === "primitive" ? "primitive" : need.kind}.`);
           return;
         }
 
-        if (slotKind === "function"){
-          if (payload.type !== "fn"){
-            showToast("Drop a function here.");
-            return;
-          }
-          if (!selectedPrimitive){
-            setWorkspaceStatus("warn", "Pick a primitive first.");
-            showToast("Choose a primitive first.");
-            return;
-          }
-
-          const prim = PRIMITIVES[selectedPrimitive];
-
-          if (!prim.needsFunction){
-            setWorkspaceStatus("warn", "sum doesn’t take a function.");
-            showToast("sum doesn’t take a function.");
-            return;
-          }
-
-          const fn = FUNCTIONS[payload.id];
-          if (!fn || fn.kind !== prim.accepts){
-            setWorkspaceStatus("warn", invalidHint(prim.label));
-            showToast("That function doesn’t fit.");
-            return;
-          }
-
-          selectedFunction = payload.id;
-          renderSlots();
-          showToast("Function set.");
+        if (payload.id !== need.id){
+          setStatus("warn", `That’s not the required ${need.type} for this step.`);
+          return;
         }
-      };
+
+        // Fill slot UI
+        const body = slotEl.querySelector(".slot-body");
+        if (need.type === "primitive"){
+          const label = need.id === "filter" ? "filter( predicate, data )"
+                    : need.id === "map"    ? "map( transform, data )"
+                    :                       "sum( data )";
+          body.innerHTML = `<span>${escapeHtml(label)}</span>`;
+        } else {
+          body.innerHTML = `<span>${escapeHtml(need.id)}(x)</span><span class="tag">${escapeHtml(need.kind)}</span>`;
+        }
+
+        slotEl.classList.add("locked");
+
+        filled[idx] = { type: payload.type, id: payload.id, kind: payload.kind || null };
+
+        renderPreview();
+      });
     }
 
-    // ---- Setup ----
-    document.getElementById("resetBtn").addEventListener("click", resetAll);
-    runBtn.addEventListener("click", runAndTypeOutput);
+    // --- Events ---
+    runBtn.addEventListener("click", runChallenge);
+    resetBtn.addEventListener("click", resetCurrent);
 
-    allowDrop(slotPrimitiveEl);
-    allowDrop(slotFunctionEl);
+    // Initial load
+    renderChallenge();
 
-    slotPrimitiveEl.addEventListener("drop", handleDropOnSlot("primitive"));
-    slotFunctionEl.addEventListener("drop", handleDropOnSlot("function"));
-
-    attachDraggables();
-
-    // Start with a typed prompt (so cursor is visible immediately)
-    setTypingContent(previewEl, "# Drag a primitive + (if needed) a function");
-    updateRunButton();
-
-    function setTypingContentNoCursor(el, text){
-      el.textContent = String(text ?? "");
-    }
-
-    // Don't show the "Try..." hint on page 3 (keep node to avoid nulls)
-    if (rightHintEl) rightHintEl.style.display = "none";
+    // OPTIONAL: If you want “Next ▶” to cycle challenges instead of navigating
+    // (leave nav.js alone if you want the regular nav behavior)
+    // document.getElementById("nextBtn").addEventListener("click", () => {
+    //   if (challengeIndex < CHALLENGES.length - 1){
+    //     challengeIndex++;
+    //     renderChallenge();
+    //   }
+    // });
   </script>
+
 
 </body>
 </html>
