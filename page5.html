@@ -166,7 +166,7 @@
     // 3) filter + map + sum (different from earlier example: positives + square + sum)
     const CHALLENGES = [
       {
-        title: "Challenge 1 — Transform with map",
+        title: "Challenge 1",
         desc: "Square every value in nums. Your output should be a new list.",
         nums: [1, 2, 3, 4],
         steps: [
@@ -183,7 +183,7 @@
         eval: (nums) => nums.map(FUNCTIONS.square.apply)
       },
       {
-        title: "Challenge 2 — Map then reduce with sum",
+        title: "Challenge 2",
         desc: "Double each value, then sum the results into a single total.",
         nums: [2, 5, 7],
         steps: [
@@ -201,7 +201,7 @@
         eval: (nums) => nums.map(FUNCTIONS.double.apply).reduce((a,b)=>a+b, 0)
       },
       {
-        title: "Challenge 3 — Filter, map, then sum",
+        title: "Challenge 3",
         desc: "Keep only the positive values, square them, then sum the squares.",
         nums: [-3, -1, 0, 2, 4],
         steps: [
