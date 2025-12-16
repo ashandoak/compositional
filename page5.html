@@ -12,7 +12,7 @@
     <div class="top">
       <h1>Now you try it</h1>
       <p>
-        <strong>Instructions:</strong> Use functional primitives to build a solution that meets the goal. Drag a primitive + (if needed) a function.</p>
+        <strong>Instructions:</strong> Drag and drop primitives and functions to the workspace to build a solution that meets the stated goal.</p>
     </div>
 
     <div class="main page3-grid">
@@ -168,7 +168,7 @@
     const CHALLENGES = [
       {
         title: "Challenge 1",
-        desc: "Square every value in nums. Your output should be a new list.",
+        desc: "Square every value in the nums array and output a new list.",
         nums: [1, 2, 3, 4],
         steps: [
           { type: "primitive", id: "map" },
@@ -185,7 +185,7 @@
       },
       {
         title: "Challenge 2",
-        desc: "Double each value, then sum the results into a single total.",
+        desc: "Double each value in the nums array, then sum the results into a single total.",
         nums: [2, 5, 7],
         steps: [
           { type: "primitive", id: "map" },
@@ -203,8 +203,8 @@
       },
       {
         title: "Challenge 3",
-        desc: "Keep only the positive values, square them, then sum the squares.",
         nums: [-3, -1, 0, 2, 4],
+        desc: "Keep only the positive values in the nums array, then square them, and sum the squares into a single total.",
         steps: [
           { type: "primitive", id: "filter" },
           { type: "fn", kind: "predicate", id: "is_positive" },
