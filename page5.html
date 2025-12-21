@@ -156,9 +156,9 @@
 
     // --- Primitives ---
     const PRIMS = {
-      filter: { label: "filter", needs: "predicate" },
-      map:    { label: "map",    needs: "transform" },
       sum:    { label: "sum",    needs: null },
+      map:    { label: "map",    needs: "transform" },
+      filter: { label: "filter", needs: "predicate" },
     };
 
     // --- Challenges (increasing complexity) ---
@@ -497,7 +497,7 @@
       primTitle.textContent = "Primitives";
       bankOrderedEl.appendChild(primTitle);
 
-      ["filter", "map", "sum"].forEach((pid) => {
+      ["sum", "map", "filter"].forEach((pid) => {
         const card = document.createElement("div");
         card.className = "draggable";
         card.setAttribute("draggable", "true");
@@ -749,8 +749,7 @@
             `<span class="out-chip conn-token" data-conn="out" data-stage="${stage}">output${stage}</span>`;
         } else {
           body.innerHTML =
-            `<span><span class="conn-token" data-conn="fn">${escapeHtml(need.id)}</span>(x)</span>` +
-            `<span class="tag">${escapeHtml(need.kind)}</span>`;
+            `<span><span class="conn-token" data-conn="fn">${escapeHtml(need.id)}</span>(x)</span>`;
         }
 
 

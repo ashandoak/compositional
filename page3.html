@@ -92,14 +92,14 @@
 
           <div class="group-title">Primitives</div>
 
-          <div class="draggable" draggable="true" data-type="primitive" data-id="filter">
-            <span>filter( predicate, data )</span>
-          </div>
+          <div class="draggable" draggable="true" data-type="primitive" data-id="sum">
+            <span>sum( data )</span>
+          </div>         
           <div class="draggable" draggable="true" data-type="primitive" data-id="map">
             <span>map( transform, data )</span>
           </div>
-          <div class="draggable" draggable="true" data-type="primitive" data-id="sum">
-            <span>sum( data )</span>
+          <div class="draggable" draggable="true" data-type="primitive" data-id="filter">
+            <span>filter( predicate, data )</span>
           </div>
 
           <div style="height:14px;"></div>
@@ -290,12 +290,8 @@
     function fnHTML(fid){
       const f = FUNCTIONS[fid];
       const name = f ? f.label : fid;
-      const kind = f ? f.kind : "";
 
-      const left = `<span><span class="conn-token" data-conn="fn">${escapeHtml(name)}</span>(x)</span>`;
-      const right = kind ? `<span class="tag">${escapeHtml(kind)}</span>` : "";
-
-      return left + right; // IMPORTANT: no newline/indentation between siblings
+      return `<span><span class="conn-token" data-conn="fn">${escapeHtml(name)}</span>(x)</span>`;
     }
 
     function displayFnText(fid){
