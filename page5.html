@@ -44,8 +44,8 @@
           </div>
             <div class="page5-challenge-desc" id="challengeDesc">…</div>
           </div>
-
-          <!-- Input slot (nums) -->
+          
+        <!-- Input slot (nums) -->
           <div class="ws-row">
             <div class="slot locked page3-static" id="staticNums">
               <div class="slot-label">Input</div>
@@ -60,6 +60,10 @@
             <div class="page5-pipeline" id="pipelineSlots"></div>
           </div>
 
+          <div class="coach panel2" id="coach" role="status" aria-live="polite">
+            <span class="coach-icon">ℹ️</span>
+            <span class="coach-text">Drag a primitive into the pipeline to begin.</span>
+          </div>
         </div>
  
         </div>
@@ -76,7 +80,6 @@
             <div class="term-sep"></div>
             <pre id="result" class="muted term-typing">Output:
 —</pre>
-            <pre id="hint" class="muted" style="margin-top:10px; display:none;"></pre>
           </div>
         </div>
       </section>
@@ -107,8 +110,6 @@
         <button id="nextBtn" class="btn-next">Next ▶</button>
       </div>
     </div>
-
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
   </div>
 
   <script src="assets/nav.js"></script>
@@ -129,8 +130,6 @@
 
     const previewEl = document.getElementById("preview");
     const resultEl  = document.getElementById("result");
-    const hintEl    = document.getElementById("hint");
-
     const runBtn = document.getElementById("runBtn");
     const resetBtn = document.getElementById("resetBtn");
 
@@ -308,15 +307,16 @@
     // --- Workspace UI helpers ---
     function clearStatus(){
       workspaceEl.classList.remove("good","warn","bad");
-      hintEl.style.display = "none";
-      hintEl.textContent = "";
+      // no terminal failure/status messaging on page 5 (use coach + slot outlines instead)
     }
 
     function setStatus(kind, msg){
       workspaceEl.classList.remove("good","warn","bad");
       workspaceEl.classList.add(kind);
-      hintEl.style.display = "block";
-      hintEl.textContent = msg;
+      // Show guidance in the coach panel instead of the terminal.
+      if (kind === "good") setCoach("good", msg);
+      else if (kind === "warn") setCoach("warn", msg);
+      else if (kind === "bad") setCoach("bad", msg);
     }
 
     function numsText(nums){
@@ -326,6 +326,29 @@
     function formatOut(out){
       if (Array.isArray(out)) return `[${out.join(", ")}]`;
       return String(out);
+    }
+
+    function setCoach(state, text){
+      const el = document.getElementById("coach");
+      if (!el) return;
+
+      el.classList.remove("is-good","is-warn","is-bad");
+      if (state) el.classList.add(`is-${state}`);
+
+      const t = el.querySelector(".coach-text");
+      if (t) t.textContent = text;
+    }
+
+    function pulseDropError(slotEl, severity="bad"){
+      if (!slotEl) return;
+      const cls = severity === "warn" ? "drop-warn" : "drop-bad";
+      slotEl.classList.remove("drop-warn","drop-bad","shake");
+      void slotEl.offsetWidth;
+      slotEl.classList.add(cls,"shake");
+      window.clearTimeout(pulseDropError._t);
+      pulseDropError._t = window.setTimeout(()=>{
+        slotEl.classList.remove("shake","drop-warn","drop-bad");
+      }, 900);
     }
 
     function primStageForIndex(ch, idx){
@@ -653,8 +676,8 @@
       try {
         out = ch.eval(ch.nums.slice());
       } catch {
-        setStatus("bad", "Something went wrong evaluating this pipeline.");
-        await typeText(resultEl, "Output:\n—", { speed: 14, startBlank: true });
+        pulseDropError(workspaceEl, "bad");
+        setCoach("bad", "Something went wrong evaluating this pipeline.");
         return;
       }
 
@@ -722,12 +745,14 @@
 
         // enforce correct order + correct item (guided Parsons)
         if (payload.type !== need.type){
-          setStatus("warn", `Step ${idx+1} needs a ${need.type === "primitive" ? "primitive" : need.kind}.`);
+          pulseDropError(slotEl, "warn");
+          setCoach("warn", `Step ${idx+1} needs a ${need.type === "primitive" ? "primitive" : need.kind}.`);
           return;
         }
 
         if (payload.id !== need.id){
-          setStatus("warn", `That’s not the required ${need.type} for this step.`);
+          pulseDropError(slotEl, "warn");
+          setCoach("warn", `That’s not the required ${need.type} for this step.`);
           return;
         }
 

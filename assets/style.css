@@ -1335,3 +1335,60 @@ body:is([data-page="3"], [data-page="5"]) .out-chip{
   background: rgba(255,255,255,0.72);
   white-space: nowrap;
 }
+body:is([data-page="3"],[data-page="5"]) .coach{
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-left: 4px solid rgba(11,18,32,0.18);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+body:is([data-page="3"],[data-page="5"]) .coach .coach-text{
+  color: rgba(11,18,32,0.78);
+}
+
+body:is([data-page="3"],[data-page="5"]) .coach.is-warn{
+  border-left-color: rgba(209,138,0,0.75);
+}
+
+body:is([data-page="3"],[data-page="5"]) .coach.is-bad{
+  border-left-color: rgba(224,59,59,0.75);
+}
+
+body:is([data-page="3"],[data-page="5"]) .coach.is-good{
+  border-left-color: rgba(22,165,107,0.75);
+}
+
+/* =========================
+   PAGES 3/5: invalid-drop feedback (shake + outline)
+   (replaces toasts/terminal failure messaging)
+   ========================= */
+
+body:is([data-page="3"], [data-page="5"]) .slot.drop-warn,
+body:is([data-page="3"], [data-page="5"]) .workspace.drop-warn{
+  outline: 2px solid rgba(209,138,0,0.85);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(209,138,0,0.22);
+}
+
+body:is([data-page="3"], [data-page="5"]) .slot.drop-bad,
+body:is([data-page="3"], [data-page="5"]) .workspace.drop-bad{
+  outline: 2px solid rgba(224,59,59,0.92);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(224,59,59,0.22);
+}
+
+body:is([data-page="3"], [data-page="5"]) .shake{
+  animation: conn-shake 240ms ease-in-out;
+}
+
+@keyframes conn-shake{
+  0%   { transform: translateX(0); }
+  25%  { transform: translateX(-4px); }
+  50%  { transform: translateX(4px); }
+  75%  { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}

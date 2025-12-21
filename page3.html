@@ -54,8 +54,14 @@
                 </div>
               </div>
             </div>
+            <div class="coach panel2" id="coach" role="status" aria-live="polite">
+              <span class="coach-icon">ℹ️</span>
+              <span class="coach-text">Drag a primitive into the pipeline to begin.</span>
+            </div>
           </div>
         </div>
+
+
 
         <!-- PANEL FOOTER: terminal is OUTSIDE panel-body -->
         <div class="panel-footer page3-terminal">
@@ -74,8 +80,6 @@
             <!-- Output only types when Run pressed -->
             <pre id="result" class="muted term-typing">Output:
 —</pre>
-
-            <pre id="hint" class="muted" style="margin-top:10px; display:none;"></pre>
           </div>
         </div>
       </section>
@@ -146,8 +150,6 @@
         <button id="nextBtn" class="btn-next">Next ▶</button>
       </div>
     </div>
-
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
   </div>
 
   <script src="assets/nav.js"></script>
@@ -198,7 +200,6 @@
     let selectedFunction = null;
 
     // ---- DOM ----
-    const toastEl = document.getElementById("toast");
     const workspaceEl = document.getElementById("workspace");
 
     const slotPrimitiveEl = document.getElementById("slotPrimitive");
@@ -206,7 +207,6 @@
 
     const previewEl = document.getElementById("preview");
     const resultEl = document.getElementById("result");
-    const hintEl = document.getElementById("hint");
     const rightHintEl = document.getElementById("rightHint");
 
     const runBtn = document.getElementById("runBtn");
@@ -232,28 +232,24 @@
       }[c]));
     }
 
-    function showToast(msg){
-      toastEl.textContent = msg;
-      toastEl.classList.add("show");
-      window.clearTimeout(showToast._t);
-      showToast._t = window.setTimeout(()=>toastEl.classList.remove("show"), 2000);
-    }
-
     function numsText(){
       return `[${NUMS.join(", ")}]`;
     }
 
     function clearWorkspaceStatus(){
       workspaceEl.classList.remove("good","warn","bad");
-      hintEl.style.display = "none";
-      hintEl.textContent = "";
+      rightHintEl.textContent = "";
+      rightHintEl.classList.remove("is-warn","is-bad","is-good");
     }
 
     function setWorkspaceStatus(kind, msg){
       workspaceEl.classList.remove("good","warn","bad");
       workspaceEl.classList.add(kind);
-      hintEl.style.display = "block";
-      hintEl.textContent = msg;
+      rightHintEl.textContent = msg || "";
+      rightHintEl.classList.remove("is-warn","is-bad","is-good");
+      if (kind === "warn") rightHintEl.classList.add("is-warn");
+      if (kind === "bad") rightHintEl.classList.add("is-bad");
+      if (kind === "good") rightHintEl.classList.add("is-good");
     }
 
     function invalidHint(primLabel){
@@ -261,6 +257,20 @@
       if (primLabel === "map") return "map needs a function that returns a value (a transform).";
       return "That function doesn't fit this primitive.";
     }
+
+    function pulseDropError(slotEl, severity="bad"){
+      if (!slotEl) return;
+      const cls = severity === "warn" ? "drop-warn" : "drop-bad";
+      slotEl.classList.remove("drop-warn","drop-bad","shake");
+      // trigger reflow so the animation can replay
+      void slotEl.offsetWidth;
+      slotEl.classList.add(cls,"shake");
+      window.clearTimeout(pulseDropError._t);
+      pulseDropError._t = window.setTimeout(()=>{
+        slotEl.classList.remove("shake","drop-warn","drop-bad");
+      }, 900);
+    }
+
 
     function formatOut(out){
       if (Array.isArray(out)) return `[${out.join(", ")}]`;
@@ -317,6 +327,17 @@
       return `${selectedPrimitive || ""}|${selectedFunction || ""}`;
     }
 
+    function setCoach(state, text){
+      const el = document.getElementById("coach");
+      if (!el) return;
+
+      el.classList.remove("is-good","is-warn","is-bad");
+      if (state) el.classList.add(`is-${state}`);
+
+      const t = el.querySelector(".coach-text");
+      if (t) t.textContent = text;
+    }
+
     function updateRunButton(){
       const runnable = isRunnable();
       runBtn.disabled = !runnable || typingLock;
@@ -324,9 +345,7 @@
       runBtn.classList.toggle("is-enabled", runnable && !typingLock);
 
       // Only show a “ready” toast when we transition to runnable
-      if (runnable && !lastRunnable){
-        showToast("Ready — press Run.");
-      }
+      if (runnable && !lastRunnable){      }
       lastRunnable = runnable;
     }
 
@@ -499,8 +518,8 @@
       try {
         out = prim.needsFunction ? prim.eval(arr, FUNCTIONS[selectedFunction]) : prim.eval(arr);
       } catch (e) {
+        pulseDropError(workspaceEl, "bad");
         setWorkspaceStatus("bad", "Something went wrong evaluating this pipeline.");
-        await typeText(resultEl, "Output:\n—", { speed: 14, startBlank: true });
         return;
       }
 
@@ -516,9 +535,7 @@
       clearWorkspaceStatus();
       resultEl.textContent = "Output:\n—";
 
-      renderSlots();
-      showToast("Reset.");
-    }
+      renderSlots();    }
 
     // ---- Drag & drop ----
     function attachDraggables(){
@@ -555,46 +572,44 @@
 
         if (slotKind === "primitive"){
           if (payload.type !== "primitive"){
-            showToast("Drop a primitive here.");
+            pulseDropError(slotPrimitiveEl, "warn");
+            setWorkspaceStatus("warn", "Drop a primitive here.");
             return;
           }
           selectedPrimitive = payload.id;
           selectedFunction = null; // avoid stale mismatch
-          renderSlots();
-          showToast("Primitive set.");
-          return;
+          renderSlots();          return;
         }
 
         if (slotKind === "function"){
           if (payload.type !== "fn"){
-            showToast("Drop a function here.");
+            pulseDropError(slotFunctionEl, "warn");
+            setWorkspaceStatus("warn", "Drop a predicate or transform here.");
             return;
           }
           if (!selectedPrimitive){
+            pulseDropError(slotFunctionEl, "warn");
             setWorkspaceStatus("warn", "Pick a primitive first.");
-            showToast("Choose a primitive first.");
             return;
           }
 
           const prim = PRIMITIVES[selectedPrimitive];
 
           if (!prim.needsFunction){
+            pulseDropError(slotFunctionEl, "warn");
             setWorkspaceStatus("warn", "sum doesn’t take a function.");
-            showToast("sum doesn’t take a function.");
             return;
           }
 
           const fn = FUNCTIONS[payload.id];
           if (!fn || fn.kind !== prim.accepts){
-            setWorkspaceStatus("warn", invalidHint(prim.label));
-            showToast("That function doesn’t fit.");
+            pulseDropError(slotFunctionEl, "bad");
+            setWorkspaceStatus("bad", invalidHint(prim.label));
             return;
           }
 
           selectedFunction = payload.id;
-          renderSlots();
-          showToast("Function set.");
-        }
+          renderSlots();        }
       };
     }
 
