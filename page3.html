@@ -34,7 +34,7 @@
               <div class="slot locked page3-static" id="staticNums">
                 <div class="slot-label">Input</div>
                 <div class="slot-body">
-                  <span>nums = [1, 2, 3, 4, 5, 6]</span>
+                  <span><span class="conn-token" data-conn="data">nums</span> = [1, 2, 3, 4, 5, 6]</span>                
                 </div>
               </div>
             </div>
@@ -274,6 +274,30 @@
       return pid;
     }
 
+    function primitiveHTML(pid){
+      if (pid === "filter") {
+        return `filter( <span class="conn-token" data-conn="need">predicate</span>, <span class="conn-token" data-conn="data">data</span> )`;
+      }
+      if (pid === "map") {
+        return `map( <span class="conn-token" data-conn="need">transform</span>, <span class="conn-token" data-conn="data">data</span> )`;
+      }
+      if (pid === "sum") {
+        return `sum( <span class="conn-token" data-conn="data">data</span> )`;
+      }
+      return escapeHtml(pid);
+    }
+
+    function fnHTML(fid){
+      const f = FUNCTIONS[fid];
+      const name = f ? f.label : fid;
+      const kind = f ? f.kind : "";
+
+      const left = `<span><span class="conn-token" data-conn="fn">${escapeHtml(name)}</span>(x)</span>`;
+      const right = kind ? `<span class="tag">${escapeHtml(kind)}</span>` : "";
+
+      return left + right; // IMPORTANT: no newline/indentation between siblings
+    }
+
     function displayFnText(fid){
       const f = FUNCTIONS[fid];
       return f ? `${f.label}(x)` : fid;
@@ -309,6 +333,38 @@
       }
       lastRunnable = runnable;
     }
+
+    function clearConnHighlights(){
+      document.querySelectorAll(".conn-hl-a, .conn-hl-b").forEach(el=>{
+        el.classList.remove("conn-hl-a","conn-hl-b");
+      });
+    }
+
+    function applyConnHighlights(){
+      clearConnHighlights();
+
+      // A: data <-> nums
+      if (selectedPrimitive){
+        document.querySelectorAll('.conn-token[data-conn="data"]').forEach(el=>{
+          el.classList.add("conn-hl-a");
+        });
+      }
+
+      // B: need <-> function (only if we have a function and it matches the primitive)
+      if (selectedPrimitive && selectedFunction){
+        const prim = PRIMITIVES[selectedPrimitive];
+        const fn = FUNCTIONS[selectedFunction];
+        if (prim && prim.needsFunction && fn && fn.kind === prim.accepts){
+          document.querySelectorAll('.conn-token[data-conn="need"]').forEach(el=>{
+            el.classList.add("conn-hl-b");
+          });
+          document.querySelectorAll('.conn-token[data-conn="fn"]').forEach(el=>{
+            el.classList.add("conn-hl-b");
+          });
+        }
+      }
+    }
+
 
     function setTypingContent(el, text){
       // Insert cursor span without breaking <pre> whitespace
@@ -371,7 +427,7 @@
       // Primitive slot
       const primBody = slotPrimitiveEl.querySelector(".slot-body");
       primBody.innerHTML = selectedPrimitive
-        ? `<span>${escapeHtml(displayPrimitiveText(selectedPrimitive))}</span>`
+        ? `<span>${primitiveHTML(selectedPrimitive)}</span>`
         : `<span class="placeholder">Drop a primitive here</span>`;
       setLocked(slotPrimitiveEl, !!selectedPrimitive);
 
@@ -386,7 +442,7 @@
           fnBody.innerHTML = `<span class="placeholder">(not needed for sum)</span>`;
           setLocked(slotFunctionEl, true);
         } else if (selectedFunction){
-          fnBody.innerHTML = `<span>${escapeHtml(displayFnText(selectedFunction))}</span>`;
+          fnBody.innerHTML = fnHTML(selectedFunction);
           setLocked(slotFunctionEl, true);
         } else {
           fnBody.innerHTML = `<span class="placeholder">Drop a ${prim.accepts} here</span>`;
@@ -396,6 +452,7 @@
 
       renderPreviewOnly();
       updateRunButton();
+      applyConnHighlights();
     }
 
     function renderPreviewOnly(){

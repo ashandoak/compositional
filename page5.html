@@ -328,6 +328,36 @@
       return String(out);
     }
 
+    function clearConnHighlights(){
+      document.querySelectorAll(".conn-hl-a, .conn-hl-b").forEach(el=>{
+        el.classList.remove("conn-hl-a","conn-hl-b");
+      });
+    }
+
+    function applyConnHighlights(){
+      clearConnHighlights();
+
+      // A: data <-> nums (show whenever any primitive step is filled)
+      const anyPrim = filled.some(x => x && x.type === "primitive");
+      if (anyPrim){
+        document.querySelectorAll('.conn-token[data-conn="data"]').forEach(el=>{
+          el.classList.add("conn-hl-a");
+        });
+      }
+
+      // B: need <-> function (show when we have at least one prim+fn pair filled)
+      const anyFn = filled.some(x => x && x.type === "fn");
+      if (anyPrim && anyFn){
+        document.querySelectorAll('.conn-token[data-conn="need"]').forEach(el=>{
+          el.classList.add("conn-hl-b");
+        });
+        document.querySelectorAll('.conn-token[data-conn="fn"]').forEach(el=>{
+          el.classList.add("conn-hl-b");
+        });
+      }
+    }
+
+
     // --- Rendering ---
     function renderChallenge(){
       const ch = CHALLENGES[challengeIndex];
@@ -342,7 +372,7 @@
       challengeMetaEl.textContent = `Requires: ${primCount} primitive${primCount===1?"":"s"}, ${fnCount} function${fnCount===1?"":"s"}`;
 
       // input nums
-      numsDeclEl.textContent = `nums = ${numsText(ch.nums)}`;
+      numsDeclEl.innerHTML = `<span class="conn-token" data-conn="data">nums</span> = ${escapeHtml(numsText(ch.nums))}`;
 
       // reset filled steps
       filled = ch.steps.map(()=>null);
@@ -638,20 +668,28 @@
 
         // Fill slot UI
         const body = slotEl.querySelector(".slot-body");
+
         if (need.type === "primitive"){
-          const label = need.id === "filter" ? "filter( predicate, data )"
-                    : need.id === "map"    ? "map( transform, data )"
-                    :                       "sum( data )";
-          body.innerHTML = `<span>${escapeHtml(label)}</span>`;
+          const label =
+            need.id === "filter" ? `filter( <span class="conn-token" data-conn="need">predicate</span>, <span class="conn-token" data-conn="data">data</span> )`
+          : need.id === "map"    ? `map( <span class="conn-token" data-conn="need">transform</span>, <span class="conn-token" data-conn="data">data</span> )`
+          :                       `sum( <span class="conn-token" data-conn="data">data</span> )`;
+
+          body.innerHTML = `<span>${label}</span>`;
         } else {
-          body.innerHTML = `<span>${escapeHtml(need.id)}(x)</span><span class="tag">${escapeHtml(need.kind)}</span>`;
+        body.innerHTML =
+          `<span><span class="conn-token" data-conn="fn">${escapeHtml(need.id)}</span>(x)</span>` +
+          `<span class="tag">${escapeHtml(need.kind)}</span>`;
+
         }
+
 
         slotEl.classList.add("locked");
 
         filled[idx] = { type: payload.type, id: payload.id, kind: payload.kind || null };
 
         renderPreview();
+        applyConnHighlights();
       });
     }
 

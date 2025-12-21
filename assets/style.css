@@ -1190,6 +1190,7 @@ body[data-page="4"] .panel.page4-explain .explain.placeholder{
 
 body:is([data-page="4"]) .top p{ 
   max-width: 90ch;
+}
 
   /* =========================
    PAGE 4: prevent explainer overlap on small viewports
@@ -1219,4 +1220,27 @@ body:is([data-page="4"]) .top p{
   body[data-page="4"] .page4-explain-wrap{
     margin-top: 16px !important;
   }
+}
+
+/* =========================
+   PAGES 3/5: connection highlights
+   ========================= */
+
+body:is([data-page="3"], [data-page="5"]) .conn-token{
+  display: inline-block;
+  padding: 0 4px;
+  border-radius: 8px;
+  transition: background 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+}
+
+/* Link A: data flow (data <-> nums) */
+body:is([data-page="3"], [data-page="5"]) .conn-hl-a{
+  background: rgba(75,123,255,0.18); /* uses existing accent vibe */
+  box-shadow: 0 0 0 2px rgba(75,123,255,0.16) inset;
+}
+
+/* Link B: function binding (transform/predicate <-> function) */
+body:is([data-page="3"], [data-page="5"]) .conn-hl-b{
+  background: rgba(22,165,107,0.18); /* uses existing “good” vibe */
+  box-shadow: 0 0 0 2px rgba(22,165,107,0.16) inset;
 }
