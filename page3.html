@@ -335,36 +335,35 @@
     }
 
     function clearConnHighlights(){
-      document.querySelectorAll(".conn-hl-a, .conn-hl-b").forEach(el=>{
-        el.classList.remove("conn-hl-a","conn-hl-b");
+      document.querySelectorAll('[class*="conn-hl-"]').forEach(el=>{
+        el.className = el.className.replace(/\bconn-hl-\d+\b/g, '');
+      });
+    }
+
+    function applyConnIndex(idx, selector){
+      document.querySelectorAll(selector).forEach(el=>{
+        el.classList.add(`conn-hl-${idx}`);
       });
     }
 
     function applyConnHighlights(){
       clearConnHighlights();
 
-      // A: data <-> nums
-      if (selectedPrimitive){
-        document.querySelectorAll('.conn-token[data-conn="data"]').forEach(el=>{
-          el.classList.add("conn-hl-a");
-        });
-      }
+      if (!selectedPrimitive) return;
 
-      // B: need <-> function (only if we have a function and it matches the primitive)
-      if (selectedPrimitive && selectedFunction){
+      // Channel 0: data ↔ nums
+      applyConnIndex(0, '.conn-token[data-conn="data"]');
+
+      // Channel 1: primitive ↔ function (if compatible)
+      if (selectedFunction){
         const prim = PRIMITIVES[selectedPrimitive];
         const fn = FUNCTIONS[selectedFunction];
         if (prim && prim.needsFunction && fn && fn.kind === prim.accepts){
-          document.querySelectorAll('.conn-token[data-conn="need"]').forEach(el=>{
-            el.classList.add("conn-hl-b");
-          });
-          document.querySelectorAll('.conn-token[data-conn="fn"]').forEach(el=>{
-            el.classList.add("conn-hl-b");
-          });
+          applyConnIndex(1, '.conn-token[data-conn="need"]');
+          applyConnIndex(1, '.conn-token[data-conn="fn"]');
         }
       }
     }
-
 
     function setTypingContent(el, text){
       // Insert cursor span without breaking <pre> whitespace

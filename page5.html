@@ -329,31 +329,64 @@
     }
 
     function clearConnHighlights(){
-      document.querySelectorAll(".conn-hl-a, .conn-hl-b").forEach(el=>{
-        el.classList.remove("conn-hl-a","conn-hl-b");
+      document.querySelectorAll('[class*="conn-hl-"]').forEach(el=>{
+        el.className = el.className.replace(/\bconn-hl-\d+\b/g, '');
+      });
+    }
+
+    function applyConnIndex(idx, root, selector){
+      const scope = root || document;
+      scope.querySelectorAll(selector).forEach(el=>{
+        el.classList.add(`conn-hl-${idx}`);
       });
     }
 
     function applyConnHighlights(){
       clearConnHighlights();
 
-      // A: data <-> nums (show whenever any primitive step is filled)
+      const ch = CHALLENGES[challengeIndex];
+
+      // Highlight nums only if there's at least one primitive placed
       const anyPrim = filled.some(x => x && x.type === "primitive");
       if (anyPrim){
-        document.querySelectorAll('.conn-token[data-conn="data"]').forEach(el=>{
-          el.classList.add("conn-hl-a");
-        });
+        applyConnIndex(0, numsDeclEl, '.conn-token[data-conn="data"]');
       }
 
-      // B: need <-> function (show when we have at least one prim+fn pair filled)
-      const anyFn = filled.some(x => x && x.type === "fn");
-      if (anyPrim && anyFn){
-        document.querySelectorAll('.conn-token[data-conn="need"]').forEach(el=>{
-          el.classList.add("conn-hl-b");
-        });
-        document.querySelectorAll('.conn-token[data-conn="fn"]').forEach(el=>{
-          el.classList.add("conn-hl-b");
-        });
+      let channel = 0;
+
+      for (let i = 0; i < ch.steps.length; i++){
+        const needStep = ch.steps[i];
+        const got = filled[i];
+        if (!got) continue;
+
+        // Slot element for this step
+        const slot = pipelineSlotsEl.querySelector(`.slot[data-step-index="${i}"]`);
+        if (!slot) continue;
+
+        // If this is a primitive, always highlight its data parameter (scoped to this slot)
+        if (needStep.type === "primitive"){
+          applyConnIndex(channel, slot, '.conn-token[data-conn="data"]');
+
+          // Only highlight predicate/transform parameter IF its function step is filled
+          if (PRIMS[needStep.id] && PRIMS[needStep.id].needs){
+            const fnIndex = i + 1;
+            const fnNeed = ch.steps[fnIndex];
+            const fnGot  = filled[fnIndex];
+
+            if (fnNeed && fnNeed.type === "fn" && fnGot){
+              // highlight the primitive's "need" parameter in the primitive slot
+              applyConnIndex(channel, slot, '.conn-token[data-conn="need"]');
+
+              // highlight the function token in the *function* slot (also scoped)
+              const fnSlot = pipelineSlotsEl.querySelector(`.slot[data-step-index="${fnIndex}"]`);
+              if (fnSlot){
+                applyConnIndex(channel, fnSlot, '.conn-token[data-conn="fn"]');
+              }
+            }
+          }
+
+          channel++; // next primitive gets the next colour
+        }
       }
     }
 
