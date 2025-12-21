@@ -758,19 +758,11 @@
             const dropped = FUNCTIONS[payload.id];
             const droppedKind = dropped ? dropped.kind : "function";
             const droppedLabel = dropped ? dropped.label : payload.id;
-
-            // Wrong kind (predicate vs transform)
-            if (droppedKind !== need.kind){
-              if (need.kind === "predicate"){
-                setCoach("warn", `This step needs a <strong>predicate</strong> (returns True/False). You dropped <strong>${droppedLabel}</strong>, a <strong>${droppedKind}</strong>. Try <strong>is_even</strong>, <strong>is_positive</strong>, or <strong>greater_than_2</strong>.`);
-              } else {
-                setCoach("warn", `This step needs a <strong>transform</strong> (changes each element). You dropped <strong>${droppedLabel}</strong>, a <strong>${droppedKind}</strong>. Try <strong>square</strong>, <strong>double</strong>, or <strong>negate</strong>.`);
-              }
-              return;
+            if (need.kind === "predicate"){
+              setCoach("warn", `This step needs a <strong>predicate</strong> (returns True/False). You dropped <strong>${droppedLabel}</strong>, a ${droppedKind}. Try <strong>is_even</strong>, <strong>is_positive</strong>, or <strong>greater_than_2</strong>.`);
+            } else {
+              setCoach("warn", `This step needs a <strong>transform</strong> (changes each value). You dropped <strong>${droppedLabel}</strong>, a ${droppedKind}. Try <strong>square</strong>, <strong>double</strong>, or <strong>negate</strong>.`);
             }
-
-            // Correct kind, but wrong specific function for this challenge
-            setCoach("warn", `This challenge expects <strong>${need.id}</strong> here (a <strong>${need.kind}</strong>). You dropped <strong>${droppedLabel}</strong>. Try <strong>${need.id}</strong>.`);
           } else {
             setCoach("warn", `This step needs <strong>${need.id}</strong>.`);
           }
@@ -805,27 +797,15 @@
         filled[idx] = { type: payload.type, id: payload.id, kind: payload.kind || null };
 
         // Positive feedback (coach)
-        const totalSteps = CHALLENGES[challengeIndex].steps.length;
-        const isLast = idx === totalSteps - 1;
-
         if (payload.type === "primitive"){
-          if (payload.id === "map"){
-            setCoach("good", `Nice — <strong>map</strong> placed. Now drop a <strong>transform</strong> into the next slot.`);
-          } else if (payload.id === "filter"){
-            setCoach("good", `Nice — <strong>filter</strong> placed. Now drop a <strong>predicate</strong> into the next slot.`);
-          } else if (payload.id === "sum"){
-            setCoach("good", isLast
-              ? `Nice — <strong>sum</strong> placed. See the result in the terminal.`
-              : `Nice — <strong>sum</strong> placed. Continue to the next step.`);
-          } else {
-            setCoach("good", `Nice — <strong>${payload.id}</strong> placed.`);
-          }
+          if (payload.id === "map") setCoach("good", `Nice — <strong>map</strong> placed. Now drop a <strong>transform</strong> into the next slot.`);
+          else if (payload.id === "filter") setCoach("good", `Nice — <strong>filter</strong> placed. Now drop a <strong>predicate</strong> into the next slot.`);
+          else if (payload.id === "sum") setCoach("good", `Nice — <strong>sum</strong> placed. Continue to the next step.`);
+          else setCoach("good", `Nice — <strong>${payload.id}</strong> placed.`);
         } else if (payload.type === "fn"){
           const dropped = FUNCTIONS[payload.id];
           const droppedLabel = dropped ? dropped.label : payload.id;
-          setCoach("good", isLast
-            ? `Great — <strong>${droppedLabel}</strong> fits here. See the result in the terminal.`
-            : `Great — <strong>${droppedLabel}</strong> fits here. Continue to the next step.`);
+          setCoach("good", `Great — <strong>${droppedLabel}</strong> fits here. Continue.`);
         }
 
 

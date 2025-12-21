@@ -1374,13 +1374,6 @@ body:is([data-page="3"], [data-page="5"]) .workspace.drop-warn{
   box-shadow: 0 0 0 3px rgba(209,138,0,0.22);
 }
 
-body:is([data-page="3"], [data-page="5"]) .slot.drop-bad,
-body:is([data-page="3"], [data-page="5"]) .workspace.drop-bad{
-  outline: 2px solid rgba(224,59,59,0.92);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(224,59,59,0.22);
-}
-
 body:is([data-page="3"], [data-page="5"]) .shake{
   animation: conn-shake 240ms ease-in-out;
 }
