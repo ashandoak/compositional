@@ -328,6 +328,15 @@
       return String(out);
     }
 
+    function primStageForIndex(ch, idx){
+      let stage = 0;
+      for (let i = 0; i <= idx; i++){
+        if (ch.steps[i].type === "primitive") stage++;
+      }
+      return stage; // 1-based
+    }
+
+
     function clearConnHighlights(){
       document.querySelectorAll('[class*="conn-hl-"]').forEach(el=>{
         el.className = el.className.replace(/\bconn-hl-\d+\b/g, '');
@@ -341,51 +350,74 @@
       });
     }
 
-    function applyConnHighlights(){
+   function applyConnHighlights(){
       clearConnHighlights();
 
       const ch = CHALLENGES[challengeIndex];
 
-      // Highlight nums only if there's at least one primitive placed
-      const anyPrim = filled.some(x => x && x.type === "primitive");
-      if (anyPrim){
-        applyConnIndex(0, numsDeclEl, '.conn-token[data-conn="data"]');
+      function slotForStep(i){
+        return pipelineSlotsEl.querySelector(`.slot[data-step-index="${i}"]`);
       }
 
-      let channel = 0;
-
+      // Collect primitive step indices in order
+      const primStepIdxs = [];
       for (let i = 0; i < ch.steps.length; i++){
-        const needStep = ch.steps[i];
-        const got = filled[i];
-        if (!got) continue;
+        if (ch.steps[i].type === "primitive") primStepIdxs.push(i);
+      }
 
-        // Slot element for this step
-        const slot = pipelineSlotsEl.querySelector(`.slot[data-step-index="${i}"]`);
-        if (!slot) continue;
+      // 3 channels per primitive stage: IN, BIND, OUT
+      function stageChannels(stage1Based){
+        const base = (stage1Based - 1) * 3;
+        return { IN: base, BIND: base + 1, OUT: base + 2 };
+      }
 
-        // If this is a primitive, always highlight its data parameter (scoped to this slot)
-        if (needStep.type === "primitive"){
-          applyConnIndex(channel, slot, '.conn-token[data-conn="data"]');
+      for (let p = 0; p < primStepIdxs.length; p++){
+        const primIdx = primStepIdxs[p];
+        if (!filled[primIdx]) continue;
 
-          // Only highlight predicate/transform parameter IF its function step is filled
-          if (PRIMS[needStep.id] && PRIMS[needStep.id].needs){
-            const fnIndex = i + 1;
-            const fnNeed = ch.steps[fnIndex];
-            const fnGot  = filled[fnIndex];
+        const stage = p + 1; // 1-based primitive stage
+        const { IN, BIND, OUT } = stageChannels(stage);
 
-            if (fnNeed && fnNeed.type === "fn" && fnGot){
-              // highlight the primitive's "need" parameter in the primitive slot
-              applyConnIndex(channel, slot, '.conn-token[data-conn="need"]');
+        const primSlot = slotForStep(primIdx);
+        if (!primSlot) continue;
 
-              // highlight the function token in the *function* slot (also scoped)
-              const fnSlot = pipelineSlotsEl.querySelector(`.slot[data-step-index="${fnIndex}"]`);
-              if (fnSlot){
-                applyConnIndex(channel, fnSlot, '.conn-token[data-conn="fn"]');
-              }
+        // Always highlight this primitive's `data` parameter with stage IN color
+        applyConnIndex(IN, primSlot, '.conn-token[data-conn="data"]');
+
+        // Input source:
+        // - stage 1 comes from nums
+        // - stage 2+ comes from previous output chip
+        if (stage === 1){
+          applyConnIndex(IN, numsDeclEl, '.conn-token[data-conn="data"]');
+        } else {
+          const prevOutChip = pipelineSlotsEl.querySelector(`.out-chip[data-stage="${stage-1}"]`);
+          if (prevOutChip){
+            // show that previous output feeds this stage's data:
+            prevOutChip.classList.add(`conn-hl-${IN}`);
+          }
+        }
+
+        // Function binding (only when fn step exists and is filled)
+        const primNeed = ch.steps[primIdx];
+        const needsFn = (primNeed.id === "filter" || primNeed.id === "map");
+        if (needsFn){
+          const fnIdx = primIdx + 1;
+          if (ch.steps[fnIdx] && ch.steps[fnIdx].type === "fn" && filled[fnIdx]){
+            const fnSlot = slotForStep(fnIdx);
+            if (fnSlot){
+              applyConnIndex(BIND, primSlot, '.conn-token[data-conn="need"]');
+              applyConnIndex(BIND, fnSlot, '.conn-token[data-conn="fn"]');
             }
           }
+        }
 
-          channel++; // next primitive gets the next colour
+        // Output chip emphasis (stage OUT color) only when it matters:
+        // if a later primitive exists AND is placed (so the output is actually used)
+        const outChip = pipelineSlotsEl.querySelector(`.out-chip[data-stage="${stage}"]`);
+        const hasNext = (p + 1 < primStepIdxs.length);
+        const nextPlaced = hasNext && filled[primStepIdxs[p + 1]];
+        if (outChip && nextPlaced){
+          outChip.classList.add(`conn-hl-${OUT}`);
         }
       }
     }
@@ -703,18 +735,24 @@
         const body = slotEl.querySelector(".slot-body");
 
         if (need.type === "primitive"){
+          const ch = CHALLENGES[challengeIndex];
+          const stage = primStageForIndex(ch, idx); // 1-based primitive stage
+
           const label =
             need.id === "filter" ? `filter( <span class="conn-token" data-conn="need">predicate</span>, <span class="conn-token" data-conn="data">data</span> )`
           : need.id === "map"    ? `map( <span class="conn-token" data-conn="need">transform</span>, <span class="conn-token" data-conn="data">data</span> )`
           :                       `sum( <span class="conn-token" data-conn="data">data</span> )`;
 
-          body.innerHTML = `<span>${label}</span>`;
+          // IMPORTANT: two sibling spans, no newline between them (keeps flex sane)
+          body.innerHTML =
+            `<span>${label}</span>` +
+            `<span class="out-chip conn-token" data-conn="out" data-stage="${stage}">output${stage}</span>`;
         } else {
-        body.innerHTML =
-          `<span><span class="conn-token" data-conn="fn">${escapeHtml(need.id)}</span>(x)</span>` +
-          `<span class="tag">${escapeHtml(need.kind)}</span>`;
-
+          body.innerHTML =
+            `<span><span class="conn-token" data-conn="fn">${escapeHtml(need.id)}</span>(x)</span>` +
+            `<span class="tag">${escapeHtml(need.kind)}</span>`;
         }
+
 
 
         slotEl.classList.add("locked");

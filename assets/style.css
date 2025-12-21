@@ -1223,14 +1223,17 @@ body:is([data-page="4"]) .top p{
 }
 
 /* =========================
-   PAGES 3/5: connection highlights
+   PAGES 3/5: connection highlights (indexed)
    ========================= */
 
 body:is([data-page="3"], [data-page="5"]) .conn-token{
   display: inline-block;
   padding: 0 4px;
   border-radius: 8px;
-  transition: background 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+  transition:
+    background 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
 }
 
 /* =========================
@@ -1247,7 +1250,7 @@ body:is([data-page="3"], [data-page="5"]) .conn-token{
     transform 140ms ease;
 }
 
-/* Channel 0 — data flow (blue) */
+/* 0 — blue */
 body:is([data-page="3"], [data-page="5"]) .conn-hl-0{
   background: rgba(75,123,255,0.38);
   box-shadow:
@@ -1255,7 +1258,7 @@ body:is([data-page="3"], [data-page="5"]) .conn-hl-0{
     0 0 0 1px rgba(75,123,255,0.85);
 }
 
-/* Channel 1 — first function binding (green) */
+/* 1 — green */
 body:is([data-page="3"], [data-page="5"]) .conn-hl-1{
   background: rgba(22,165,107,0.40);
   box-shadow:
@@ -1263,7 +1266,7 @@ body:is([data-page="3"], [data-page="5"]) .conn-hl-1{
     0 0 0 1px rgba(22,165,107,0.85);
 }
 
-/* Channel 2 — second binding (amber) */
+/* 2 — amber */
 body:is([data-page="3"], [data-page="5"]) .conn-hl-2{
   background: rgba(209,138,0,0.42);
   box-shadow:
@@ -1271,7 +1274,7 @@ body:is([data-page="3"], [data-page="5"]) .conn-hl-2{
     0 0 0 1px rgba(209,138,0,0.85);
 }
 
-/* Channel 3 — third binding (purple) */
+/* 3 — purple */
 body:is([data-page="3"], [data-page="5"]) .conn-hl-3{
   background: rgba(140,90,255,0.42);
   box-shadow:
@@ -1279,10 +1282,56 @@ body:is([data-page="3"], [data-page="5"]) .conn-hl-3{
     0 0 0 1px rgba(140,90,255,0.85);
 }
 
-/* Channel 4 — terminal / reduction (red) */
+/* 4 — red */
 body:is([data-page="3"], [data-page="5"]) .conn-hl-4{
   background: rgba(224,59,59,0.42);
   box-shadow:
     0 0 0 2px rgba(224,59,59,0.55) inset,
     0 0 0 1px rgba(224,59,59,0.85);
+}
+
+/* 5 — teal */
+body:is([data-page="3"], [data-page="5"]) .conn-hl-5{
+  background: rgba(0,170,170,0.40);
+  box-shadow:
+    0 0 0 2px rgba(0,170,170,0.55) inset,
+    0 0 0 1px rgba(0,170,170,0.85);
+}
+
+/* 6 — pink */
+body:is([data-page="3"], [data-page="5"]) .conn-hl-6{
+  background: rgba(255,70,170,0.36);
+  box-shadow:
+    0 0 0 2px rgba(255,70,170,0.52) inset,
+    0 0 0 1px rgba(255,70,170,0.82);
+}
+
+/* 7 — lime */
+body:is([data-page="3"], [data-page="5"]) .conn-hl-7{
+  background: rgba(140,200,0,0.38);
+  box-shadow:
+    0 0 0 2px rgba(140,200,0,0.52) inset,
+    0 0 0 1px rgba(140,200,0,0.82);
+}
+
+/* 8 — indigo */
+body:is([data-page="3"], [data-page="5"]) .conn-hl-8{
+  background: rgba(60,90,180,0.40);
+  box-shadow:
+    0 0 0 2px rgba(60,90,180,0.55) inset,
+    0 0 0 1px rgba(60,90,180,0.85);
+}
+
+
+/* PAGES 3/5: output chip (stage result) */
+body:is([data-page="3"], [data-page="5"]) .out-chip{
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1.2;
+  border: 1px solid var(--border);
+  color: rgba(11,18,32,0.72);
+  background: rgba(255,255,255,0.72);
+  white-space: nowrap;
 }
