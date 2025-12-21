@@ -582,8 +582,8 @@
 
           if (selectedPrimitive === "map") setCoach("good", `Nice — you chose <strong>map</strong>. Now add a <strong>transform</strong> function (square, double, negate).`);
           else if (selectedPrimitive === "filter") setCoach("good", `Nice — you chose <strong>filter</strong>. Now add a <strong>predicate</strong> function (is_even, is_positive, greater_than_2).`);
-          else if (selectedPrimitive === "sum") setCoach("good", `Nice — you chose <strong>sum</strong>. See the result in the terminal.`);
-          else if (selectedPrimitive === "sum") setCoach("good", `Nice — you chose <strong>sum</strong>. See the result in the terminal.`);
+          else if (selectedPrimitive === "sum") setCoach("good", `Nice — you chose <strong>sum</strong>. Run the code in the terminal.`);
+          else if (selectedPrimitive === "sum") setCoach("good", `Nice — you chose <strong>sum</strong>. Run the code in the terminal.`);
 
           return;
         }
@@ -619,8 +619,8 @@
           renderSlots();
 
           const fnName = (FUNCTIONS[selectedFunction] && FUNCTIONS[selectedFunction].label) ? FUNCTIONS[selectedFunction].label : selectedFunction;
-          if (prim.accepts === "transform") setCoach("good", `Great — <strong>${fnName}</strong> is a <strong>transform</strong>. See the result in the terminal.`);
-          else if (prim.accepts === "predicate") setCoach("good", `Great — <strong>${fnName}</strong> is a <strong>predicate</strong>. See the result in the terminal.`);
+          if (prim.accepts === "transform") setCoach("good", `Great — <strong>${fnName}</strong> is a <strong>transform</strong>. Run the code in the terminal.`);
+          else if (prim.accepts === "predicate") setCoach("good", `Great — <strong>${fnName}</strong> is a <strong>predicate</strong>. Run the code in the terminal.`);
           else setCoach("good", `Great — <strong>${fnName}</strong> fits.`);        }
       };
     }

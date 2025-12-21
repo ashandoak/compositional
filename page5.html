@@ -165,66 +165,80 @@
     // 2) map + sum
     // 3) filter + map + sum (different from earlier example: positives + square + sum)
     const CHALLENGES = [
-      {
-        title: "Challenge 1",
-        desc: "Square every value in the nums array and output a new list.",
-        nums: [1, 2, 3, 4],
-        steps: [
-          { type: "primitive", id: "map" },
-          { type: "fn", kind: "transform", id: "square" },
-        ],
-        preview: (numsTxt) => [
-          `nums = ${numsTxt}`,
-          ``,
-          `def square(x): return x * x`,
-          `result = list(map(square, nums))`,
-          `print(result)`
-        ].join("\n"),
-        eval: (nums) => nums.map(FUNCTIONS.square.apply)
-      },
-      {
-        title: "Challenge 2",
-        desc: "Double each value in the nums array, then sum the results into a single total.",
-        nums: [2, 5, 7],
-        steps: [
-          { type: "primitive", id: "map" },
-          { type: "fn", kind: "transform", id: "double" },
-          { type: "primitive", id: "sum" },
-        ],
-        preview: (numsTxt) => [
-          `nums = ${numsTxt}`,
-          ``,
-          `def double(x): return x * 2`,
-          `total = sum(map(double, nums))`,
-          `print(total)`
-        ].join("\n"),
-        eval: (nums) => nums.map(FUNCTIONS.double.apply).reduce((a,b)=>a+b, 0)
-      },
-      {
-        title: "Challenge 3",
-        nums: [-3, -1, 0, 2, 4],
-        desc: "Keep only the positive values in the nums array, then square them, and sum the squares into a single total.",
-        steps: [
-          { type: "primitive", id: "filter" },
-          { type: "fn", kind: "predicate", id: "is_positive" },
-          { type: "primitive", id: "map" },
-          { type: "fn", kind: "transform", id: "square" },
-          { type: "primitive", id: "sum" },
-        ],
-        preview: (numsTxt) => [
-          `nums = ${numsTxt}`,
-          ``,
-          `def is_positive(x): return x > 0`,
-          `def square(x): return x * x`,
-          `total = sum(map(square, filter(is_positive, nums)))`,
-          `print(total)`
-        ].join("\n"),
-        eval: (nums) => nums
-          .filter(FUNCTIONS.is_positive.apply)
-          .map(FUNCTIONS.square.apply)
-          .reduce((a,b)=>a+b, 0)
-      }
-    ];
+    {
+      title: "Challenge 1",
+      desc: "Square every value in the nums array and output a new list.",
+      nums: [1, 2, 3, 4],
+      steps: [
+        { type: "primitive", id: "map" },
+        { type: "fn", kind: "transform", id: "square" },
+      ],
+      comment: [
+        "# map transforms each value independently",
+        "# it produces a new list without changing nums"
+      ],
+      preview: (numsTxt) => [
+        `nums = ${numsTxt}`,
+        ``,
+        `def square(x): return x * x`,
+        `result = list(map(square, nums))`,
+        `print(result)`
+      ].join("\n"),
+      eval: (nums) => nums.map(FUNCTIONS.square.apply)
+    },
+    {
+      title: "Challenge 2",
+      desc: "Double each value in the nums array, then sum the results into a single total.",
+      nums: [2, 5, 7],
+      steps: [
+        { type: "primitive", id: "map" },
+        { type: "fn", kind: "transform", id: "double" },
+        { type: "primitive", id: "sum" },
+      ],
+      comment: [
+        "# map transforms each value independently",
+        "# sum reduces a list to a single value"
+      ],
+       preview: (numsTxt) => [
+        `nums = ${numsTxt}`,
+        ``,
+        `def double(x): return x * 2`,
+        `total = sum(map(double, nums))`,
+        `print(total)`
+      ].join("\n"),
+      eval: (nums) => nums.map(FUNCTIONS.double.apply).reduce((a,b)=>a+b, 0)
+    },
+    {
+      title: "Challenge 3",
+      nums: [-3, -1, 0, 2, 4],
+      desc: "Keep only the positive values in the nums array, then square them, and sum the squares into a single total.",
+      steps: [
+        { type: "primitive", id: "filter" },
+        { type: "fn", kind: "predicate", id: "is_positive" },
+        { type: "primitive", id: "map" },
+        { type: "fn", kind: "transform", id: "square" },
+        { type: "primitive", id: "sum" },
+      ],
+      comment: [
+        "# filter keeps only values where the predicate returns True",
+        "# map transforms each remaining value independently",
+        "# sum reduces the final list to a single value"
+      ],
+       preview: (numsTxt) => [
+        `nums = ${numsTxt}`,
+        ``,
+        `def is_positive(x): return x > 0`,
+        `def square(x): return x * x`,
+        `total = sum(map(square, filter(is_positive, nums)))`,
+        `print(total)`
+      ].join("\n"),
+      eval: (nums) => nums
+        .filter(FUNCTIONS.is_positive.apply)
+        .map(FUNCTIONS.square.apply)
+        .reduce((a,b)=>a+b, 0)
+    }
+  ];
+
 
     // --- State ---
     let challengeIndex = 0;
@@ -682,8 +696,12 @@
       }
 
       ranOnce = true;
-      const outputText = `Output:\n${formatOut(out)}`;
+      const commentLines = Array.isArray(ch.comment) ? ch.comment : [];
+      const commentBlock = commentLines.length ? ("\n\n" + commentLines.join("\n")) : "";
+
+      const outputText = `Output:\n${formatOut(out)}${commentBlock}`;
       await typeText(resultEl, outputText, { speed: 14, startBlank: true });
+
 
       workspaceEl.classList.add("good");
 
@@ -815,7 +833,7 @@
             setCoach("good", `Nice — <strong>filter</strong> placed. Now drop a <strong>predicate</strong> into the next slot.`);
           } else if (payload.id === "sum"){
             setCoach("good", isLast
-              ? `Nice — <strong>sum</strong> placed. See the result in the terminal.`
+              ? `Nice — <strong>sum</strong> placed. Run the code in the terminal.`
               : `Nice — <strong>sum</strong> placed. Continue to the next step.`);
           } else {
             setCoach("good", `Nice — <strong>${payload.id}</strong> placed.`);
@@ -824,7 +842,7 @@
           const dropped = FUNCTIONS[payload.id];
           const droppedLabel = dropped ? dropped.label : payload.id;
           setCoach("good", isLast
-            ? `Great — <strong>${droppedLabel}</strong> fits here. See the result in the terminal.`
+            ? `Great — <strong>${droppedLabel}</strong> fits here. Run the code in the terminal.`
             : `Great — <strong>${droppedLabel}</strong> fits here. Continue to the next step.`);
         }
 
