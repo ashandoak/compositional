@@ -1385,3 +1385,180 @@ body:is([data-page="3"], [data-page="5"]) .shake{
   75%  { transform: translateX(-3px); }
   100% { transform: translateX(0); }
 }
+
+
+/* =========================
+   PAGE 5: celebration
+   ========================= */
+
+body[data-page="5"] .celebrate{
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 999; /* above hero + panels */
+  opacity: 0;
+}
+
+body[data-page="5"] .celebrate.is-on{
+  opacity: 1;
+}
+
+body[data-page="5"] .celebrate-pop{
+  background: rgba(255,255,255,0.92);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  border-radius: 18px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transform: scale(0.92);
+  opacity: 0;
+}
+
+body[data-page="5"] .celebrate.is-on .celebrate-pop{
+  animation: popIn 1900ms ease forwards;
+}
+
+body[data-page="5"] .celebrate-emoji{
+  font-size: 28px;
+  line-height: 1;
+}
+
+body[data-page="5"] .celebrate-text{
+  font-weight: 700;
+}
+
+@keyframes popIn{
+  0%   { transform: scale(0.86); opacity: 0; }
+  18%  { transform: scale(1.05); opacity: 1; }
+  35%  { transform: scale(1.0); }
+  85%  { opacity: 1; }
+  100% { transform: scale(0.98); opacity: 0; }
+}
+
+/* Confetti container */
+body[data-page="5"] .confetti{
+  position: absolute;
+  width: 1px;
+  height: 1px;
+}
+
+/* Individual confetti pieces (created via JS) */
+body[data-page="5"] .confetti i{
+  position: absolute;
+  width: 10px;
+  height: 6px;
+  border-radius: 4px;
+  opacity: 0;
+  transform: translate(0,0) rotate(0deg);
+}
+
+body[data-page="5"] .celebrate.is-on .confetti i{
+  animation: confettiFly 1900ms ease forwards;
+}
+
+@keyframes confettiFly{
+  0%   { opacity: 0; transform: translate(0,0) rotate(0deg); }
+  10%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); }
+}
+
+/* Optional: pulse the hero/workspace subtly on success */
+body[data-page="5"] .workspace.is-success{
+  animation: successPulse 650ms ease;
+}
+
+@keyframes successPulse{
+  0%   { box-shadow: 0 0 0 0 rgba(22,165,107,0.0); }
+  40%  { box-shadow: 0 0 0 6px rgba(22,165,107,0.18); }
+  100% { box-shadow: 0 0 0 0 rgba(22,165,107,0.0); }
+}
+/* =========================
+   PAGE 5: celebration + next-chevron pulse
+   ========================= */
+
+body[data-page="5"] .ch-nav.pulse-next{
+  animation: chNextPulse 1.15s ease-in-out infinite;
+  border-color: rgba(22,165,107,0.85);
+  box-shadow:
+    0 0 0 3px rgba(22,165,107,0.16),
+    0 10px 22px rgba(22,165,107,0.18);
+}
+
+@keyframes chNextPulse{
+  0%   { transform: translateY(0) scale(1);   filter: saturate(1); }
+  50%  { transform: translateY(-1px) scale(1.08); filter: saturate(1.35); }
+  100% { transform: translateY(0) scale(1);   filter: saturate(1); }
+}
+
+/* =========================
+   PAGE 5: celebration overlay (popup + fireworks)
+   ========================= */
+
+body[data-page="5"] #celebrate{
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.98);
+  transition: opacity 180ms ease, transform 180ms ease;
+  z-index: 999;
+}
+
+body[data-page="5"] #celebrate.is-on{
+  opacity: 1;
+  transform: scale(1);
+}
+
+body[data-page="5"] #celebrate .celebrate-pop{
+  background: rgba(255,255,255,0.92);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: celebratePopIn 520ms ease both;
+}
+
+@keyframes celebratePopIn{
+  0%   { transform: translateY(10px) scale(0.96); opacity: 0; }
+  40%  { transform: translateY(0) scale(1.02); opacity: 1; }
+  100% { transform: translateY(0) scale(1.0); opacity: 1; }
+}
+
+/* Confetti container (NOT a piece) */
+body[data-page="5"] #celebrate .confetti{
+  position: absolute;
+  width: 1px;
+  height: 1px;
+}
+
+/* Confetti pieces created by JS */
+body[data-page="5"] #celebrate .confetti i{
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 10px;
+  height: 6px;
+  border-radius: 4px;
+  opacity: 0;
+  transform: translate(0,0) rotate(0deg);
+}
+
+body[data-page="5"] #celebrate.is-on .confetti i{
+  animation: confettiFly 900ms ease forwards;
+}
+
+@keyframes confettiFly{
+  0%   { opacity: 0; transform: translate(0,0) rotate(0deg); }
+  10%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); }
+}
+
