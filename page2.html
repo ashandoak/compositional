@@ -10,13 +10,13 @@
 <body data-page="2" data-prev="page1.html" data-next="page3.html">
   <div class="app">
     <div class="top">
-      <h1>But this approach doesn’t scale</h1>
-      <p>
-        <strong>Instructions:</strong> The code you built works correctly. Click highlighted areas to explore why.
-        This is perfectly valid code — the goal is to notice how structure affects readability, reuse, and bug risk as you evolve the program.
-      </p>
-    </div>
-
+      <h1>This approach works — until requirements change</h1>
+        <p>
+          <strong>Instructions:</strong> The code shown here is valid, but doesn't easily scale.
+          Click on the lines of code below to see how looping logic, conditionals, and shared state become tightly interwoven.
+          The rest of this exercise explores how compositional techniques make change safer and more predictable.
+        </p>
+      </div>
     <div class="main page2-grid">
       <div class="page2-spacer" aria-hidden="true"></div>
 
@@ -86,12 +86,10 @@
       </div>
     </div>
 
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
   </div>
 
   <script src="assets/nav.js"></script>
   <script>
-    const toastEl = document.getElementById("toast");
     const statusPill = document.getElementById("statusPill");
     const calloutEl = document.getElementById("callout");
 
@@ -119,13 +117,6 @@
         pill: "Aggregation"
       }
     };
-
-    function showToast(msg) {
-      toastEl.textContent = msg;
-      toastEl.classList.add("show");
-      window.clearTimeout(showToast._t);
-      showToast._t = window.setTimeout(() => toastEl.classList.remove("show"), 2200);
-    }
 
     function escapeHtml(s) {
       return s.replace(/[&<>"']/g, (c) => ({
@@ -160,7 +151,6 @@
         HIGHLIGHTS.filter(x => x.dataset.key === key).forEach(x => x.classList.add("active"));
 
         setCallout(key);
-        showToast("Explanation opened.");
       });
     });
   </script>
