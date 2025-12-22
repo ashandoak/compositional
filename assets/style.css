@@ -1562,3 +1562,50 @@ body[data-page="5"] #celebrate.is-on .confetti i{
   100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); }
 }
 
+/* =========================
+   PAGES 3/5: filled output chips
+   ========================= */
+
+/* Channel 0 — blue */
+body:is([data-page="3"], [data-page="5"]) .out-chip.conn-hl-0{
+  background: rgba(75,123,255,0.38);
+}
+
+/* Channel 1 — green */
+body:is([data-page="3"], [data-page="5"]) .out-chip.conn-hl-1{
+  background: rgba(22,165,107,0.40);
+}
+
+/* Channel 2 — amber */
+body:is([data-page="3"], [data-page="5"]) .out-chip.conn-hl-2{
+  background: rgba(209,138,0,0.42);
+}
+
+/* Channel 3 — purple */
+body:is([data-page="3"], [data-page="5"]) .out-chip.conn-hl-3{
+  background: rgba(140,90,255,0.42);
+}
+
+/* Channel 4 — red */
+body:is([data-page="3"], [data-page="5"]) .out-chip.conn-hl-4{
+  background: rgba(224,59,59,0.42);
+}
+/* Channel 0 — blue */
+body:is([data-page="3"], [data-page="5"]) .out-chip.conn-hl-5{
+  background: rgba(0,170,170,0.40);
+}
+
+/* Channel 1 — green */
+body:is([data-page="3"], [data-page="5"]) .out-chip.conn-hl-6{
+  background: rgba(255,70,170,0.36);
+}
+
+/* Channel 2 — amber */
+body:is([data-page="3"], [data-page="5"]) .out-chip.conn-hl-7{
+  background: rgba(140,200,0,0.38);
+}
+
+/* Channel 3 — purple */
+body:is([data-page="3"], [data-page="5"]) .out-chip.conn-hl-8{
+  background: rgba(60,90,180,0.40);
+}
